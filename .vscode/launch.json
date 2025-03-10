@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/Admin/OneDrive/Desktop/tp",
-      "program": "c:/Users/Admin/OneDrive/Desktop/tp/build/Debug/outDebug",
+      "cwd": "d:/candent",
+      "program": "d:/candent/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
