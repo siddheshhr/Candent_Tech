@@ -1,41 +1,38 @@
 import React from 'react';
+import { Menu, User } from 'lucide-react';
 import ima from '../assets/logo.png';
-import { User } from 'lucide-react';
-import { NavLink } from 'react-router';
 
-export default function Navbar() {
+export default function Navbar({ toggleSidebar }) {
   return (
-    <header className='bg-[#3B9EC1] text-white py-2 px-4 flex justify items-end w-full'>
-        {/*Logo div*/}
-        <div className='flex items-center'>
-            <img src = {ima} alt='Candet-Logo' className='h-10 max-w-[14rem] object-contain pl-12'/>
-        </div>
-
-        {/*navlinks*/}
-        <nav className='hidden md:flex items-center flex-1 justify-end space-x-1 pl-2 pr-2'>
-            <div className='flex justify-items-center space-x-6 lg:space-x-10'>
-            <a href="#" className="font-medium text-lg lg:text-xl">Home</a>
-          <div className="ml-500 lg:ml-12"> {/* Adjust this margin to control right shift */}
-            <a href="#" className="font-medium text-lg lg:text-xl mr-6 lg:mr-10">Leads</a>
-            <a href="#" className="font-medium text-lg lg:text-xl pr-10">Opportunities</a>
-          </div>
-            </div>
-        </nav>
-
-         {/* Mobile Menu Button */}
-      <button className="md:hidden">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
-
-      {/* User Icon */}
-      <div>
-        <button className="rounded-full bg-[#3B9EC1] border-2 border-white p-1.5">
-          <User size={24} className="h-5 w-5 lg:h-6 lg:w-6" />
+    <header className="bg-candentBlue text-white h-16 flex items-center px-4 justify-between shadow-md">
+      {/* LEFT: Brand + Hamburger for mobile */}
+      <div className="flex items-center space-x-3">
+        <button
+          onClick={toggleSidebar}
+          className="block md:hidden focus:outline-none"
+        >
+          <Menu size={24} />
         </button>
+        <img src={ima} alt="Candent Logo" className="h-10 object-contain" />
+        {/* <div className="hidden sm:flex flex-col leading-tight">
+          <span className="font-bold text-base">Candent</span>
+          <span className="text-sm -mt-1">Bright Minds</span>
+        </div> */}
       </div>
 
+      {/* MIDDLE: Nav links (desktop only) */}
+      <nav className="hidden md:flex space-x-8">
+        <a href="#" className="font-medium hover:underline">Home</a>
+        <a href="#" className="font-medium hover:underline">Leads</a>
+        <a href="#" className="font-medium hover:underline">Opportunities</a>
+      </nav>
+
+      {/* RIGHT: User Icon */}
+      <div className="flex items-center">
+        <button className="rounded-full border-2 border-white p-1.5 hover:bg-white hover:text-candentBlue transition-colors">
+          <User size={20} />
+        </button>
+      </div>
     </header>
   );
 }
