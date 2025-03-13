@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Custom chart tooltip */
+.chartjs-tooltip {
+    @apply rounded-lg shadow-lg p-2;
+    background: #3B9EC1 !important;
+    border: none !important;
+  }
