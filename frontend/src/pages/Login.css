@@ -140,7 +140,8 @@
     text-decoration: none;
     font-weight: 600;
   }
-=======
+
+.login-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
