@@ -3,8 +3,11 @@ import { Route, Routes } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/Login';
 import SignupPage from './pages/Signup';
-import Dashboard   from './pages/Dashboard';
+// <<<<<<< main
+// import Dashboard   from './pages/Dashboard';
 
+// =======
+// >>>>>>> main
 
 function App() {
     return (
@@ -12,7 +15,10 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+// <<<<<<< main
+//             <Route path="/dashboard" element={<Dashboard />} />
+// =======
+// >>>>>>> main
         </Routes>
     );
 }
