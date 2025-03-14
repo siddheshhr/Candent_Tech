@@ -3,8 +3,9 @@ const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 var nodemailer = require("nodemailer");
+const { errorHandler } = require("../utils/error");
 
-const signup = async (req, res) => {
+const signup = async (req, res, next) => {
   const { username, email, password } = req.body;
 
   if (
@@ -15,7 +16,7 @@ const signup = async (req, res) => {
     email === "" ||
     password === ""
   ) {
-    return res.status(400).json({ message: "All fields required !" });
+    next(errorHandler(400, "All fields are required!"));
   }
   const hashedPassword = await bcryptjs.hashSync(password, 12);
 
@@ -29,7 +30,7 @@ const signup = async (req, res) => {
     await newUser.save();
     res.json("signup success!");
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
@@ -64,7 +65,7 @@ const signin = async (req, res) => {
       })
       .json(rest);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
@@ -161,7 +162,7 @@ const forgotPassword = async (req, res) => {
       .status(200)
       .json({ message: "Password reset link sent to your email." });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
@@ -182,7 +183,7 @@ const resetPassword = async (req, res) => {
       .status(200)
       .json({ message: "Token verified. Please enter a new password." });
   } catch (err) {
-    res.status(400).json({ message: "Invalid or expired token." });
+    next(err);
   }
 };
 

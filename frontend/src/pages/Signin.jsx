@@ -1,8 +1,12 @@
 import { Link } from 'react-router-dom';
 import { Eye } from 'lucide-react';
-import './Login.css';
+import './Signin.css';
+import { useDispatch } from 'react-redux';
+import { signInStart, signInFailure, signInSucess } from '../redux/user/userSlice';
 
-function Login() {
+function Signin() {
+  const dispatch = useDispatch();
+
   return (
     <div className="login-container">
       <div className="login-form">
@@ -55,5 +59,5 @@ function Login() {
   );
 }
 
-export default Login;
+export default Signin;
 
