@@ -1,89 +1,83 @@
 const User = require("../models/user");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 require("dotenv").config();
-var nodemailer = require("nodemailer");
 const { errorHandler } = require("../utils/error");
 
 const signup = async (req, res, next) => {
-  const { username, email, password } = req.body;
+  
+  const { firstName, lastName, dateOfBirth, email, password } = req.body;
 
-  if (
-    !username ||
-    !email ||
-    !password ||
-    username === "" ||
-    email === "" ||
-    password === ""
-  ) {
-    next(errorHandler(400, "All fields are required!"));
+  if (!firstName || !lastName || !dateOfBirth || !email || !password) {
+    return next(errorHandler(400, "All fields are required!"));
   }
-  const hashedPassword = await bcryptjs.hashSync(password, 12);
+  
+  const hashedPassword = bcryptjs.hashSync(password, 12);
 
+  // Auto-assign username as email since we don't need a separate username field.
   const newUser = new User({
-    username,
+    username: email,  // Use email as the username
+    firstName,
+    lastName,
+    dateOfBirth: new Date(dateOfBirth),
     email,
     password: hashedPassword,
   });
 
   try {
     await newUser.save();
-    res.json("signup success!");
+    res.status(201).json({ message: "Signup success!" });
   } catch (error) {
     next(error);
   }
 };
 
-const signin = async (req, res) => {
+const signin = async (req, res, next) => {
   const { email, password } = req.body;
-
-  if (!email || !password || email === "" || password === "") {
-    return res.status(400).json({ message: "All fields required !" });
+  
+  if (!email || !password) {
+    return res.status(400).json({ message: "All fields required!" });
   }
-
+  
   try {
     const validUser = await User.findOne({ email });
     if (!validUser) {
-      return res.status(400).json({ message: "Not a valid User !" });
+      return res.status(400).json({ message: "Not a valid User!" });
     }
     const validPassword = bcryptjs.compareSync(password, validUser.password);
     if (!validPassword) {
       return res.status(400).json({ message: "Invalid User" });
     }
-    //saving the encrypted value in cookie of browser
     const token = jwt.sign(
-      { id: validUser._id, isAdmin: validUser.isAdmin },
+      { id: validUser._id, isAdmin: validUser.role === "admin" },
       process.env.JWT_SECRET
     );
-
+    
     const { password: pass, ...rest } = validUser._doc;
-
+    
     res
       .status(200)
-      .cookie("access_token", token, {
-        httpOnly: true,
-      })
+      .cookie("access_token", token, { httpOnly: true })
       .json(rest);
   } catch (error) {
     next(error);
   }
 };
 
-const google = async (req, res) => {
+const google = async (req, res, next) => {
   const { email, name, googlePhotoUrl } = req.body;
   try {
     const user = await User.findOne({ email });
     if (user) {
       const token = jwt.sign(
-        { id: user._id, isAdmin: user.isAdmin },
+        { id: user._id, isAdmin: user.role === "admin" },
         process.env.JWT_SECRET
       );
       const { password, ...rest } = user._doc;
       res
         .status(200)
-        .cookie("access_token", token, {
-          httpOnly: true,
-        })
+        .cookie("access_token", token, { httpOnly: true })
         .json(rest);
     } else {
       const generatedPassword =
@@ -91,24 +85,22 @@ const google = async (req, res) => {
         Math.random().toString(36).slice(-8);
       const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
       const newUser = new User({
-        username:
-          name.toLowerCase().split(" ").join("") +
-          Math.random().toString(9).slice(-4),
+        firstName: name.split(" ")[0] || name,
+        lastName: name.split(" ")[1] || "",
+        dateOfBirth: new Date(), // or ask for DOB later
         email,
         password: hashedPassword,
         profilePicture: googlePhotoUrl,
       });
       await newUser.save();
       const token = jwt.sign(
-        { id: newUser._id, isAdmin: newUser.isAdmin },
+        { id: newUser._id, isAdmin: newUser.role === "admin" },
         process.env.JWT_SECRET
       );
       const { password, ...rest } = newUser._doc;
       res
         .status(200)
-        .cookie("access_token", token, {
-          httpOnly: true,
-        })
+        .cookie("access_token", token, { httpOnly: true })
         .json(rest);
     }
   } catch (error) {
@@ -116,7 +108,7 @@ const google = async (req, res) => {
   }
 };
 
-const forgotPassword = async (req, res) => {
+const forgotPassword = async (req, res, next) => {
   const { email } = req.body;
 
   try {
@@ -130,43 +122,42 @@ const forgotPassword = async (req, res) => {
     const token = jwt.sign({ email: oldUser.email, id: oldUser._id }, secret, {
       expiresIn: "5m",
     });
-    const link = `http://localhost:3000/auth/reset-password/${oldUser._id}/${token}`; // Change this while hosting
-    console.log(link);
+    const link = `http://localhost:3000/auth/reset-password/${oldUser._id}/${token}`;
+    console.log("Reset link:", link);
 
- //LEFT WITH SETTING GMAIL SERVICE CONNECTION
-
+    // Set up Nodemailer with Gmail
     var transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "email",
-        pass: "pass-key",
+        user: process.env.EMAIL, // your Gmail address from .env
+        pass: process.env.EMAIL_PASSWORD, // your Gmail app password from .env
       },
     });
 
     var mailOptions = {
-      from: "sid4042.raskar@gmail.com",
-      to: "sid4042.raskar@gmail.com",
-      subject: "Rest Password - Candent",
-      text: link,
+      from: process.env.EMAIL,
+      to: oldUser.email,
+      subject: "Reset Password - Candent",
+      text: `Please use the following link to reset your password:\n\n${link}`,
     };
-// 
+
     transporter.sendMail(mailOptions, function (error, info) {
       if (error) {
-        console.log(error);
+        console.log("Error sending email:", error);
+        return res.status(500).json({ message: "Error sending email." });
       } else {
         console.log("Email sent: " + info.response);
+        return res.status(200).json({
+          message: "Password reset link sent to your email.",
+        });
       }
     });
-
-    res
-      .status(200)
-      .json({ message: "Password reset link sent to your email." });
   } catch (err) {
     next(err);
   }
 };
 
-const resetPassword = async (req, res) => {
+const resetPassword = async (req, res, next) => {
   const { id, token } = req.params;
 
   try {
@@ -176,9 +167,8 @@ const resetPassword = async (req, res) => {
     }
 
     const secret = process.env.JWT_SECRET + oldUser.password;
-    const verify = jwt.verify(token, secret);
+    jwt.verify(token, secret);
 
-    // Render a form for the user to enter a new password (frontend)
     res
       .status(200)
       .json({ message: "Token verified. Please enter a new password." });
@@ -187,7 +177,7 @@ const resetPassword = async (req, res) => {
   }
 };
 
-const updatePassword = async (req, res) => {
+const updatePassword = async (req, res, next) => {
   const { id, token } = req.params;
   const { password } = req.body;
 
@@ -198,20 +188,16 @@ const updatePassword = async (req, res) => {
     }
 
     const secret = process.env.JWT_SECRET + oldUser.password;
-    const verify = jwt.verify(token, secret);
+    jwt.verify(token, secret);
 
     // Hash the new password
-    const encryptedPassword = await bcryptjs.hash(password, 12);
+    const encryptedPassword = bcryptjs.hashSync(password, 12);
+    await User.updateOne({ _id: id }, { $set: { password: encryptedPassword } });
 
-    await User.updateOne(
-      { _id: id },
-      { $set: { password: encryptedPassword } }
-    );
-
-    return res.status(200).json({ message: "Password reset successful!" });
+    res.status(200).json({ message: "Password reset successful!" });
   } catch (error) {
     console.error("Error updating password:", error);
-    return res.status(400).json({ message: "Invalid or expired token." });
+    res.status(400).json({ message: "Invalid or expired token." });
   }
 };
 

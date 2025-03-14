@@ -12,6 +12,7 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.6.1",
     "chart.js": "^4.4.8",
+    "flowbite-react": "^0.10.2",
     "framer-motion": "^12.5.0",
     "lucide": "^0.477.0",
     "lucide-react": "^0.477.0",
