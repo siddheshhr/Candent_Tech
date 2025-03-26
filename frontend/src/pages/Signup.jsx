@@ -4,6 +4,7 @@ import './Signup.css';
 import { useState } from 'react';
 import { Alert, Spinner } from 'flowbite-react';
 import ima from '../assets/gicon.png';
+import { toast } from 'react-toastify';
 
 function Signup() {
   const navigate = useNavigate();
@@ -36,11 +37,15 @@ function Signup() {
       !formData.password ||
       !formData.confirmPassword
     ) {
-      return setErrorMessage("All fields are required");
+      setErrorMessage("All fields are required");
+      toast.error("All fields are required");
+      return;
     }
     // Check if passwords match
     if (formData.password !== formData.confirmPassword) {
-      return setErrorMessage("Passwords do not match");
+      setErrorMessage("Passwords do not match");
+      toast.error("Passwords do not match");
+      return;
     }
     try {
       setLoading(true);
@@ -59,18 +64,22 @@ function Signup() {
       const data = await res.json();
       if (data.success === false) {
         setErrorMessage(data.message);
+        toast.error(data.message);
         setLoading(false);
         return;
       }
       setLoading(false);
-      if(res.ok){
+      if (res.ok) {
+        toast.success("Account created successfully!");
         navigate('/signin');
       }
     } catch (err) {
       setErrorMessage(err.message);
+      toast.error(err.message);
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="signup-container">

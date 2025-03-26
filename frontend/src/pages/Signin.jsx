@@ -3,6 +3,8 @@ import { Eye } from 'lucide-react';
 import './Signin.css';
 import { useState } from 'react';
 import { Alert, Spinner } from 'flowbite-react';
+import { toast } from 'react-toastify';
+
 
 function Signin() {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -19,12 +21,13 @@ function Signin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!formData.email || !formData.password) {
       setErrorMessage("All fields are required");
+      toast.error("All fields are required");
       return;
     }
-
+  
     try {
       setLoading(true);
       setErrorMessage(null);
@@ -36,19 +39,22 @@ function Signin() {
       const data = await res.json();
       if (!res.ok) {
         setErrorMessage(data.message || "Signin failed");
+        toast.error(data.message || "Signin failed");
         setLoading(false);
         return;
       }
-      // On successful sign in, you can store the token if needed and navigate.
-      console.log(data);
+      // On successful sign in
+      toast.success("Signed in successfully!");
       setLoading(false);
-      navigate('/dashboard');  // Update the route as per your app
+      navigate('/dashboard');
     } catch (err) {
       console.error(err);
-      setErrorMessage("Network error. Please try again");
+      // setErrorMessage("Failed to sign in. Please try again");
+      toast.error("Failed to sign in. Please try again");
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="login-container">

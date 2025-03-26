@@ -16,40 +16,43 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const sidebarWidth = isOpen ? 'w-64' : 'w-16';
 
   return (
-    <aside
-      className={`
-        bg-white text-gray-700 border-r border-gray-200
-        flex flex-col pt-4 h-screen
-        transition-all duration-300
-        ${sidebarWidth}
-        hidden md:flex
-      `}
-    >
-      {/* Desktop Toggle Button */}
-      <div className="px-4 mb-4">
-        <button
-          onClick={toggleSidebar}
-          className="text-gray-600 hover:text-gray-900"
-        >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      </div>
+    <>
+      {/* Placeholder div to reserve space in the layout */}
+      <div className={`${sidebarWidth} hidden md:block`}></div>
+      
+      <aside
+        className={`
+          fixed top-0 left-0 z-50 bg-white text-gray-700 border-r border-gray-200
+          flex flex-col pt-4 h-screen transition-all duration-300
+          ${sidebarWidth} hidden md:flex
+        `}
+      >
+        {/* Desktop Toggle Button */}
+        <div className="px-4 mb-4">
+          <button
+            onClick={toggleSidebar}
+            className="text-gray-600 hover:text-gray-900"
+          >
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
 
-      {/* Menu Items */}
-      <nav className="flex flex-col space-y-2">
-        <SidebarItem icon={<Home size={20} />} label="Home" isOpen={isOpen} />
-        <SidebarItem icon={<Users size={20} />} label="Leads" isOpen={isOpen} />
-        <SidebarItem icon={<Briefcase size={20} />} label="Companies" isOpen={isOpen} />
-        <SidebarItem icon={<Clock size={20} />} label="Opportunity" isOpen={isOpen} />
-        <SidebarItem icon={<Bell size={20} />} label="Notifications" isOpen={isOpen} />
-        <SidebarItem icon={<FileText size={20} />} label="Reports" isOpen={isOpen} />
-      </nav>
+        {/* Menu Items */}
+        <nav className="flex flex-col space-y-2">
+          <SidebarItem icon={<Home size={20} />} label="Home" isOpen={isOpen} />
+          <SidebarItem icon={<Users size={20} />} label="Leads" isOpen={isOpen} />
+          <SidebarItem icon={<Briefcase size={20} />} label="Companies" isOpen={isOpen} />
+          <SidebarItem icon={<Clock size={20} />} label="Opportunity" isOpen={isOpen} />
+          <SidebarItem icon={<Bell size={20} />} label="Notifications" isOpen={isOpen} />
+          <SidebarItem icon={<FileText size={20} />} label="Reports" isOpen={isOpen} />
+        </nav>
 
-      {/* Logout at the bottom */}
-      <div className="mt-auto mb-4">
-        <SidebarItem icon={<LogOut size={20} />} label="Logout" isOpen={isOpen} />
-      </div>
-    </aside>
+        {/* Logout at the bottom */}
+        <div className="mt-auto mb-4">
+          <SidebarItem icon={<LogOut size={20} />} label="Logout" isOpen={isOpen} />
+        </div>
+      </aside>
+    </>
   );
 };
 
