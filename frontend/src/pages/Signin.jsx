@@ -3,12 +3,18 @@ import { Eye } from 'lucide-react';
 import './Signin.css';
 import { useState } from 'react';
 import { Alert, Spinner } from 'flowbite-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { signInStart, signInSucess, signInFailure } from '../redux/user/userSlice';
+import ima from '../assets/gicon.png';
+import OAuth from '../components/OAuth';
+
 
 function Signin() {
   const [formData, setFormData] = useState({ email: '', password: '' });
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const { loading, error: errorMessage } = useSelector((state) => state.user);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     setFormData({ 
@@ -21,32 +27,28 @@ function Signin() {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
-      setErrorMessage("All fields are required");
+      dispatch(signInFailure("Please fill in all fields"));
       return;
     }
 
     try {
-      setLoading(true);
-      setErrorMessage(null);
+      dispatch(signInStart());
       const res = await fetch('http://localhost:3000/auth/signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
       const data = await res.json();
+      
       if (!res.ok) {
-        setErrorMessage(data.message || "Signin failed");
-        setLoading(false);
-        return;
+        // Dispatch error from backend response
+        dispatch(signInFailure(data.message || "Signin failed"));
+      } else {
+        dispatch(signInSucess(data));
+        navigate('/dashboard');
       }
-      // On successful sign in, you can store the token if needed and navigate.
-      console.log(data);
-      setLoading(false);
-      navigate('/dashboard');  // Update the route as per your app
-    } catch (err) {
-      console.error(err);
-      setErrorMessage("Network error. Please try again");
-      setLoading(false);
+    } catch (error) {
+      dispatch(signInFailure(error.message));
     }
   };
 
@@ -70,13 +72,13 @@ function Signin() {
             <label>Password</label>
             <div className="login-password-input">
               <input 
-                type="password" 
+                 type={showPassword ? 'text' : 'password'} 
                 placeholder="Enter password" 
                 id="password" 
                 onChange={handleChange} 
                 required 
               />
-              <Eye className="login-eye-icon" size={20} />
+              <Eye onClick={() => setShowPassword(!showPassword)}  className="login-eye-icon" size={20} />
             </div>
           </div>
 
@@ -104,14 +106,8 @@ function Signin() {
           <div className="login-divider">
             <span>Or</span>
           </div>
-
-          <button className="login-google-btn" type="button">
-            <img 
-              src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" 
-              alt="Google" 
-            />
-            Or sign in with Google
-          </button>
+          <OAuth />
+          
 
           <p className="login-footer">
             Don't have an account? <Link to="/signup">Sign up now</Link>

@@ -4,6 +4,7 @@ import './Signup.css';
 import { useState } from 'react';
 import { Alert, Spinner } from 'flowbite-react';
 import ima from '../assets/gicon.png';
+import OAuth from '../components/OAuth';
 
 function Signup() {
   const navigate = useNavigate();
@@ -171,14 +172,9 @@ function Signup() {
           <div className="signup-divider">
             <span>Or</span>
           </div>
-
-          <button className="signup-google-btn font-medium" type="button">
-            <img src={ima} alt="Google" />
-            Sign up with Google
-          </button>
-
+          <OAuth />
           <p className="signup-footer">
-            Already have an account? <Link to="/login">Sign In</Link>
+            Already have an account? <Link to="/signin">Sign In</Link>
           </p>
         </form>
       </div>
