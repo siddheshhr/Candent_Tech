@@ -4,8 +4,20 @@ const userSchema = new mongoose.Schema(
   {
     username: {
       type: String,
+      unique: false, // Change from true to false
+      sparse: true   // Allows multiple null values
+    },
+    firstName: {
+      type: String,
       required: true,
-      unique: true,
+    },
+    lastName: {
+      type: String,
+      required: true,
+    },
+    dateOfBirth: {
+      type: Date,
+      required: true,
     },
     email: {
       type: String,
@@ -26,10 +38,6 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "hr", "client"], // Role-based access
       default: "client",
     },
-    // resetLink: {
-    //   type: String,
-    //   default: ''
-    // }
   },
   { timestamps: true }
 );
