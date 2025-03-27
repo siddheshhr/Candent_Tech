@@ -6,7 +6,7 @@ const authRoutes = require("./routes/auth_route.js");
 
 const app = express();
 const PORT = 3000;
-//left with middle ware for error stuff 
+//docs - email token for sending mail , firebase, mongodbatlas
 mongoose
   .connect(process.env.MONGO)
   .then(() => {

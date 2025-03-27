@@ -4,13 +4,17 @@ import './Signin.css';
 import { useState } from 'react';
 import { Alert, Spinner } from 'flowbite-react';
 import { toast } from 'react-toastify';
-
+import { useDispatch, useSelector } from 'react-redux';
+import { signInStart, signInSucess, signInFailure } from '../redux/user/userSlice';
+import ima from '../assets/gicon.png';
+import OAuth from '../components/OAuth';
 
 function Signin() {
   const [formData, setFormData] = useState({ email: '', password: '' });
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { loading, error: errorMessage } = useSelector((state) => state.user);
 
   const handleChange = (e) => {
     setFormData({ 
@@ -21,40 +25,35 @@ function Signin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!formData.email || !formData.password) {
-      setErrorMessage("All fields are required");
+      dispatch(signInFailure("Please fill in all fields"));
       toast.error("All fields are required");
       return;
     }
-  
+
     try {
-      setLoading(true);
-      setErrorMessage(null);
+      dispatch(signInStart());
       const res = await fetch('http://localhost:3000/auth/signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
       const data = await res.json();
+      
       if (!res.ok) {
-        setErrorMessage(data.message || "Signin failed");
+        dispatch(signInFailure(data.message || "Signin failed"));
         toast.error(data.message || "Signin failed");
-        setLoading(false);
-        return;
+      } else {
+        dispatch(signInSucess(data));
+        toast.success("Signed in successfully!");
+        navigate('/dashboard');
       }
-      // On successful sign in
-      toast.success("Signed in successfully!");
-      setLoading(false);
-      navigate('/dashboard');
-    } catch (err) {
-      console.error(err);
-      // setErrorMessage("Failed to sign in. Please try again");
+    } catch (error) {
+      dispatch(signInFailure(error.message));
       toast.error("Failed to sign in. Please try again");
-      setLoading(false);
     }
   };
-  
 
   return (
     <div className="login-container">
@@ -76,13 +75,13 @@ function Signin() {
             <label>Password</label>
             <div className="login-password-input">
               <input 
-                type="password" 
+                type={showPassword ? 'text' : 'password'} 
                 placeholder="Enter password" 
                 id="password" 
                 onChange={handleChange} 
                 required 
               />
-              <Eye className="login-eye-icon" size={20} />
+              <Eye onClick={() => setShowPassword(!showPassword)} className="login-eye-icon" size={20} />
             </div>
           </div>
 
@@ -110,14 +109,8 @@ function Signin() {
           <div className="login-divider">
             <span>Or</span>
           </div>
-
-          <button className="login-google-btn" type="button">
-            <img 
-              src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" 
-              alt="Google" 
-            />
-            Or sign in with Google
-          </button>
+          
+          <OAuth />
 
           <p className="login-footer">
             Don't have an account? <Link to="/signup">Sign up now</Link>

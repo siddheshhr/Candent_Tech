@@ -67,38 +67,56 @@ const signin = async (req, res, next) => {
 
 const google = async (req, res, next) => {
   const { email, name, googlePhotoUrl } = req.body;
+  
   try {
-    const user = await User.findOne({ email });
-    if (user) {
+    // Validate required fields
+    if (!email || !name) {
+      return next(errorHandler(400, "Email and name are required for Google authentication."));
+    }
+
+    // Check if the user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       const token = jwt.sign(
-        { id: user._id, isAdmin: user.role === "admin" },
+        { id: existingUser._id, isAdmin: existingUser.role === "admin" },
         process.env.JWT_SECRET
       );
-      const { password, ...rest } = user._doc;
-      res
+      const { password, ...rest } = existingUser._doc;
+      return res
         .status(200)
         .cookie("access_token", token, { httpOnly: true })
         .json(rest);
     } else {
+      // Split the full name into parts
+      const nameParts = name.trim().split(" ");
+      const firstName = nameParts[0] || name;
+      // If more than one part exists, join them for lastName; otherwise, set a default
+      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "Not Provided";
+
+      // Generate a random password for the new user
       const generatedPassword =
         Math.random().toString(36).slice(-8) +
         Math.random().toString(36).slice(-8);
       const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
+
+      // Create a new user, auto-assigning username as the email
       const newUser = new User({
-        firstName: name.split(" ")[0] || name,
-        lastName: name.split(" ")[1] || "",
-        dateOfBirth: new Date(), // or ask for DOB later
+        username: email,
+        firstName,
+        lastName,
+        dateOfBirth: new Date(), // Use current date if DOB isn't provided via OAuth
         email,
         password: hashedPassword,
-        profilePicture: googlePhotoUrl,
+        profilePicture: googlePhotoUrl || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
       });
       await newUser.save();
+
       const token = jwt.sign(
         { id: newUser._id, isAdmin: newUser.role === "admin" },
         process.env.JWT_SECRET
       );
       const { password, ...rest } = newUser._doc;
-      res
+      return res
         .status(200)
         .cookie("access_token", token, { httpOnly: true })
         .json(rest);
