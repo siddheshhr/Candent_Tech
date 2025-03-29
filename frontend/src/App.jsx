@@ -5,6 +5,7 @@ import Signin from './pages/Signin';
 import SignupPage from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import LeadsPage from './pages/LeadsPage';
+import PersonalLeadPage from './pages/PersonalLeadPage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -17,6 +18,7 @@ function App() {
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/leads" element={<LeadsPage />} />
+              <Route path="/personalinfo" element={<PersonalLeadPage />} />
           </Routes>
           <ToastContainer 
             position="top-right"

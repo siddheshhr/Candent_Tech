@@ -4,7 +4,7 @@ import { Twitter, Instagram, Youtube, Linkedin } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-800 text-white py-4">
+    <footer className="w-100 bg-gray-800 text-white py-4">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Logo and Social Media */}
