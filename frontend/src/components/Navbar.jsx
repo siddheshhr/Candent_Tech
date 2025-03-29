@@ -23,9 +23,11 @@ export default function Navbar({ toggleSidebar }) {
       </nav>
 
       <div className="flex items-center">
-        <button className="rounded-full border-2 border-white p-1.5 hover:bg-white hover:text-candentBlue transition-colors">
-          <User size={20} />
-        </button>
+        <Link to="/profile">
+          <button className="rounded-full border-2 border-white p-1.5 hover:bg-white hover:text-candentBlue transition-colors">
+            <User size={20} />
+          </button>
+        </Link>
       </div>
     </header>
   );
