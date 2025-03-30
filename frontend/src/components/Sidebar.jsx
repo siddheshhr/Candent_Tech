@@ -1,4 +1,6 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
+
 import {
   Home,
   Users,
@@ -39,9 +41,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
         {/* Menu Items */}
         <nav className="flex flex-col space-y-2">
-          <SidebarItem icon={<Home size={20} />} label="Home" isOpen={isOpen} />
-          <SidebarItem icon={<Users size={20} />} label="Leads" isOpen={isOpen} />
-          <SidebarItem icon={<Briefcase size={20} />} label="Companies" isOpen={isOpen} />
+          <Link to="/"><SidebarItem icon={<Home size={20} />} label="Home" isOpen={isOpen} /></Link>
+          <Link to="/leads"><SidebarItem icon={<Users size={20} />} label="Leads" isOpen={isOpen} /></Link>
+          <Link to="/dashboard"><SidebarItem icon={<Briefcase size={20} />} label="Dashboard" isOpen={isOpen} /></Link>
           <SidebarItem icon={<Clock size={20} />} label="Opportunity" isOpen={isOpen} />
           <SidebarItem icon={<Bell size={20} />} label="Notifications" isOpen={isOpen} />
           <SidebarItem icon={<FileText size={20} />} label="Reports" isOpen={isOpen} />
@@ -71,3 +73,4 @@ const SidebarItem = ({ icon, label, isOpen }) => (
 );
 
 export default Sidebar;
+
