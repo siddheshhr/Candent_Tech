@@ -140,10 +140,13 @@ const LeadsPage = () => {
               </div>
 
               <div className="flex space-x-2">
+                <Link to='/leadform'>
                 <button className="bg-[#51A1E0] text-white px-4 py-2 rounded-lg flex items-center 
                                    hover:bg-[#4086ba] transition-colors hover:shadow-md">
                   <PlusCircle className="mr-2" size={20} /> Add Lead
                 </button>
+                </Link>
+                
                 <button className="border rounded-lg p-2 hover:bg-gray-100 transition-colors hover:shadow">
                   <Download size={20} />
                 </button>
