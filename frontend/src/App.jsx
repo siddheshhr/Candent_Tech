@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import LeadsPage from './pages/LeadsPage';
 import PersonalLeadPage from './pages/PersonalLeadPage';
 import ProfilePage from './pages/ProfilePage'; // Import the ProfilePage component
+import LeadForm from './pages/LeadFormPage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -21,6 +22,7 @@ function App() {
               <Route path="/leads" element={<LeadsPage />} />
               <Route path="/personalinfo" element={<PersonalLeadPage />} />
               <Route path="/profile" element={<ProfilePage />} />  {/* New profile route */}
+              <Route path="/leadform" element={<LeadForm />} />
           </Routes>
           <ToastContainer 
             position="top-right"
