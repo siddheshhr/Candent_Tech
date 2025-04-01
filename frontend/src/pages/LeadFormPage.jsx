@@ -121,6 +121,13 @@ export default function LeadForm() {
     setFormData({ ...formData, companyMembers: newMembers });
   };
 
+  const inputClass = `w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none border-0`;
+  const errorInputClass = `w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none text-red-500`;
+  
+  // New input classes for nested fields with borders
+  const nestedInputClass = `w-full px-4 py-2 bg-white rounded-lg focus:outline-none border border-gray-300`;
+  const nestedErrorInputClass = `w-full px-4 py-2 bg-white rounded-lg focus:outline-none border border-red-500 text-red-500`;
+
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg">
       <div className="flex justify-between items-center mb-8">
@@ -173,9 +180,7 @@ export default function LeadForm() {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               disabled={!isEditing}
-              className={`w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none ${
-                errors.name ? 'border-2 border-red-500' : ''
-              }`}
+              className={errors.name ? errorInputClass : inputClass}
               placeholder="Enter full name"
             />
             {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
@@ -188,9 +193,7 @@ export default function LeadForm() {
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
               disabled={!isEditing}
-              className={`w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none ${
-                errors.role ? 'border-2 border-red-500' : ''
-              }`}
+              className={errors.role ? errorInputClass : inputClass}
               placeholder="Enter role"
             />
             {errors.role && <p className="text-red-500 text-sm">{errors.role}</p>}
@@ -203,9 +206,7 @@ export default function LeadForm() {
               value={formData.contact}
               onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
               disabled={!isEditing}
-              className={`w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none ${
-                errors.contact ? 'border-2 border-red-500' : ''
-              }`}
+              className={errors.contact ? errorInputClass : inputClass}
               placeholder="Enter contact number"
             />
             {errors.contact && <p className="text-red-500 text-sm">{errors.contact}</p>}
@@ -218,9 +219,7 @@ export default function LeadForm() {
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               disabled={!isEditing}
-              className={`w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none ${
-                errors.email ? 'border-2 border-red-500' : ''
-              }`}
+              className={errors.email ? errorInputClass : inputClass}
               placeholder="Enter email address"
             />
             {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
@@ -233,9 +232,7 @@ export default function LeadForm() {
               value={formData.personalEmail}
               onChange={(e) => setFormData({ ...formData, personalEmail: e.target.value })}
               disabled={!isEditing}
-              className={`w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none ${
-                errors.personalEmail ? 'border-2 border-red-500' : ''
-              }`}
+              className={errors.personalEmail ? errorInputClass : inputClass}
               placeholder="Enter personal email"
             />
             {errors.personalEmail && <p className="text-red-500 text-sm">{errors.personalEmail}</p>}
@@ -248,9 +245,7 @@ export default function LeadForm() {
               value={formData.birthdate}
               onChange={(e) => setFormData({ ...formData, birthdate: e.target.value })}
               disabled={!isEditing}
-              className={`w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none ${
-                errors.birthdate ? 'border-2 border-red-500' : ''
-              }`}
+              className={errors.birthdate ? errorInputClass : inputClass}
             />
             {errors.birthdate && <p className="text-red-500 text-sm">{errors.birthdate}</p>}
           </div>
@@ -261,9 +256,7 @@ export default function LeadForm() {
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               disabled={!isEditing}
-              className={`w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none ${
-                errors.address ? 'border-2 border-red-500' : ''
-              }`}
+              className={errors.address ? errorInputClass : inputClass}
               placeholder="Enter address"
               rows={3}
             />
@@ -282,9 +275,7 @@ export default function LeadForm() {
               value={formData.companyName}
               onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
               disabled={!isEditing}
-              className={`w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none ${
-                errors.companyName ? 'border-2 border-red-500' : ''
-              }`}
+              className={errors.companyName ? errorInputClass : inputClass}
               placeholder="Enter company name"
             />
             {errors.companyName && <p className="text-red-500 text-sm">{errors.companyName}</p>}
@@ -297,9 +288,7 @@ export default function LeadForm() {
               value={formData.companyDomain}
               onChange={(e) => setFormData({ ...formData, companyDomain: e.target.value })}
               disabled={!isEditing}
-              className={`w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none ${
-                errors.companyDomain ? 'border-2 border-red-500' : ''
-              }`}
+              className={errors.companyDomain ? errorInputClass : inputClass}
               placeholder="Enter company domain"
             />
             {errors.companyDomain && <p className="text-red-500 text-sm">{errors.companyDomain}</p>}
@@ -312,9 +301,7 @@ export default function LeadForm() {
               value={formData.companyContact}
               onChange={(e) => setFormData({ ...formData, companyContact: e.target.value })}
               disabled={!isEditing}
-              className={`w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none ${
-                errors.companyContact ? 'border-2 border-red-500' : ''
-              }`}
+              className={errors.companyContact ? errorInputClass : inputClass}
               placeholder="Enter company contact"
             />
             {errors.companyContact && <p className="text-red-500 text-sm">{errors.companyContact}</p>}
@@ -327,9 +314,7 @@ export default function LeadForm() {
               value={formData.companyCity}
               onChange={(e) => setFormData({ ...formData, companyCity: e.target.value })}
               disabled={!isEditing}
-              className={`w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none ${
-                errors.companyCity ? 'border-2 border-red-500' : ''
-              }`}
+              className={errors.companyCity ? errorInputClass : inputClass}
               placeholder="Enter city"
             />
             {errors.companyCity && <p className="text-red-500 text-sm">{errors.companyCity}</p>}
@@ -342,9 +327,7 @@ export default function LeadForm() {
               value={formData.companyState}
               onChange={(e) => setFormData({ ...formData, companyState: e.target.value })}
               disabled={!isEditing}
-              className={`w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none ${
-                errors.companyState ? 'border-2 border-red-500' : ''
-              }`}
+              className={errors.companyState ? errorInputClass : inputClass}
               placeholder="Enter state"
             />
             {errors.companyState && <p className="text-red-500 text-sm">{errors.companyState}</p>}
@@ -357,9 +340,7 @@ export default function LeadForm() {
               value={formData.companyCountry}
               onChange={(e) => setFormData({ ...formData, companyCountry: e.target.value })}
               disabled={!isEditing}
-              className={`w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none ${
-                errors.companyCountry ? 'border-2 border-red-500' : ''
-              }`}
+              className={errors.companyCountry ? errorInputClass : inputClass}
               placeholder="Enter country"
             />
             {errors.companyCountry && <p className="text-red-500 text-sm">{errors.companyCountry}</p>}
@@ -371,9 +352,7 @@ export default function LeadForm() {
               value={formData.companyAddress}
               onChange={(e) => setFormData({ ...formData, companyAddress: e.target.value })}
               disabled={!isEditing}
-              className={`w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none ${
-                errors.companyAddress ? 'border-2 border-red-500' : ''
-              }`}
+              className={errors.companyAddress ? errorInputClass : inputClass}
               placeholder="Enter company address"
               rows={3}
             />
@@ -397,7 +376,7 @@ export default function LeadForm() {
             </div>
             
             {formData.companyMembers.map((member, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg relative">
+              <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg relative border border-gray-200 shadow-sm">
                 {isEditing && formData.companyMembers.length > 1 && (
                   <button
                     type="button"
@@ -414,9 +393,7 @@ export default function LeadForm() {
                     value={member.role}
                     onChange={(e) => handleCompanyMemberChange(index, 'role', e.target.value)}
                     disabled={!isEditing}
-                    className={`w-full px-4 py-2 bg-white rounded-lg focus:outline-none ${
-                      errors[`member${index}role`] ? 'border-2 border-red-500' : ''
-                    }`}
+                    className={errors[`member${index}role`] ? nestedErrorInputClass : nestedInputClass}
                     placeholder="Enter role"
                   />
                   {errors[`member${index}role`] && (
@@ -430,9 +407,7 @@ export default function LeadForm() {
                     value={member.name}
                     onChange={(e) => handleCompanyMemberChange(index, 'name', e.target.value)}
                     disabled={!isEditing}
-                    className={`w-full px-4 py-2 bg-white rounded-lg focus:outline-none ${
-                      errors[`member${index}name`] ? 'border-2 border-red-500' : ''
-                    }`}
+                    className={errors[`member${index}name`] ? nestedErrorInputClass : nestedInputClass}
                     placeholder="Enter name"
                   />
                   {errors[`member${index}name`] && (
@@ -446,9 +421,7 @@ export default function LeadForm() {
                     value={member.email}
                     onChange={(e) => handleCompanyMemberChange(index, 'email', e.target.value)}
                     disabled={!isEditing}
-                    className={`w-full px-4 py-2 bg-white rounded-lg focus:outline-none ${
-                      errors[`member${index}email`] ? 'border-2 border-red-500' : ''
-                    }`}
+                    className={errors[`member${index}email`] ? nestedErrorInputClass : nestedInputClass}
                     placeholder="Enter email"
                   />
                   {errors[`member${index}email`] && (
@@ -462,9 +435,7 @@ export default function LeadForm() {
                     value={member.contact}
                     onChange={(e) => handleCompanyMemberChange(index, 'contact', e.target.value)}
                     disabled={!isEditing}
-                    className={`w-full px-4 py-2 bg-white rounded-lg focus:outline-none ${
-                      errors[`member${index}contact`] ? 'border-2 border-red-500' : ''
-                    }`}
+                    className={errors[`member${index}contact`] ? nestedErrorInputClass : nestedInputClass}
                     placeholder="Enter contact"
                   />
                   {errors[`member${index}contact`] && (
@@ -494,7 +465,7 @@ export default function LeadForm() {
 
           <div className="space-y-4">
             {formData.phases.map((phase, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg relative">
+              <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg relative border border-gray-200 shadow-sm">
                 {isEditing && formData.phases.length > 1 && (
                   <button
                     type="button"
@@ -511,9 +482,7 @@ export default function LeadForm() {
                     value={phase.name}
                     onChange={(e) => handlePhaseChange(index, 'name', e.target.value)}
                     disabled={!isEditing}
-                    className={`w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none ${
-                      errors[`phase${index}name`] ? 'border-2 border-red-500' : ''
-                    }`}
+                    className={errors[`phase${index}name`] ? nestedErrorInputClass : nestedInputClass}
                     placeholder={`Enter phase ${index + 1} name`}
                   />
                   {errors[`phase${index}name`] && (
@@ -527,9 +496,7 @@ export default function LeadForm() {
                     value={phase.date}
                     onChange={(e) => handlePhaseChange(index, 'date', e.target.value)}
                     disabled={!isEditing}
-                    className={`w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none ${
-                      errors[`phase${index}date`] ? 'border-2 border-red-500' : ''
-                    }`}
+                    className={errors[`phase${index}date`] ? nestedErrorInputClass : nestedInputClass}
                   />
                   {errors[`phase${index}date`] && (
                     <p className="text-red-500 text-sm">{errors[`phase${index}date`]}</p>
@@ -546,9 +513,7 @@ export default function LeadForm() {
               value={formData.leadAddedDate}
               onChange={(e) => setFormData({ ...formData, leadAddedDate: e.target.value })}
               disabled={!isEditing}
-              className={`w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none ${
-                errors.leadAddedDate ? 'border-2 border-red-500' : ''
-              }`}
+              className={errors.leadAddedDate ? errorInputClass : inputClass}
             />
             {errors.leadAddedDate && <p className="text-red-500 text-sm">{errors.leadAddedDate}</p>}
           </div>
