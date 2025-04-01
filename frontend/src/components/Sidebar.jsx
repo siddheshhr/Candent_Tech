@@ -1,4 +1,7 @@
 import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+
 import {
   Home,
   Users,
@@ -12,8 +15,24 @@ import {
 } from 'lucide-react';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
+  const navigate = useNavigate();
+
   // Adjust sidebar width based on state
   const sidebarWidth = isOpen ? 'w-64' : 'w-16';
+
+  // Handle logout process with Toastify notification
+  const handleLogout = () => {
+    // Clear user session data here, for example:
+    // localStorage.removeItem('authToken');
+
+    // Show a sign out notification using React Toastify
+    toast.success("Signed Out!");
+
+    // Redirect to the sign in page after a brief delay to allow the toast to show
+    setTimeout(() => {
+      navigate('/signin');
+    }, 1000);
+  };
 
   return (
     <>
@@ -39,9 +58,15 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
         {/* Menu Items */}
         <nav className="flex flex-col space-y-2">
-          <SidebarItem icon={<Home size={20} />} label="Home" isOpen={isOpen} />
-          <SidebarItem icon={<Users size={20} />} label="Leads" isOpen={isOpen} />
-          <SidebarItem icon={<Briefcase size={20} />} label="Companies" isOpen={isOpen} />
+          <Link to="/dashboard">
+            <SidebarItem icon={<Home size={20} />} label="Home" isOpen={isOpen} />
+          </Link>
+          <Link to="/leads">
+            <SidebarItem icon={<Users size={20} />} label="Leads" isOpen={isOpen} />
+          </Link>
+          <Link to="/">
+            <SidebarItem icon={<Briefcase size={20} />} label="Dashboard" isOpen={isOpen} />
+          </Link>
           <SidebarItem icon={<Clock size={20} />} label="Opportunity" isOpen={isOpen} />
           <SidebarItem icon={<Bell size={20} />} label="Notifications" isOpen={isOpen} />
           <SidebarItem icon={<FileText size={20} />} label="Reports" isOpen={isOpen} />
@@ -49,17 +74,18 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
         {/* Logout at the bottom */}
         <div className="mt-auto mb-4">
-          <SidebarItem icon={<LogOut size={20} />} label="Logout" isOpen={isOpen} />
+          <button onClick={handleLogout} className="w-full">
+            <SidebarItem icon={<LogOut size={20} />} label="Logout" isOpen={isOpen} />
+          </button>
         </div>
       </aside>
     </>
   );
 };
 
-// Single sidebar item
+// Single sidebar item component
 const SidebarItem = ({ icon, label, isOpen }) => (
-  <a
-    href="#"
+  <div
     className={`
       flex items-center px-4 py-2 hover:bg-gray-100
       ${isOpen ? 'justify-start' : 'justify-center'}
@@ -67,7 +93,7 @@ const SidebarItem = ({ icon, label, isOpen }) => (
   >
     <span className="text-gray-600">{icon}</span>
     {isOpen && <span className="ml-3">{label}</span>}
-  </a>
+  </div>
 );
 
 export default Sidebar;

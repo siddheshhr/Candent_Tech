@@ -1,15 +1,16 @@
 .signup-container {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: white;
-    padding: 16px;
-  }
-  
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  padding: 5px;
+  overflow: hidden; /* Prevents scrolling */
+}
+
   .signup-form {
     background: white;
-    padding: 32px;
+    padding: 0px 32px;
     border-radius: 12px;
     width: 100%;
     max-width: 500px;
