@@ -15,8 +15,8 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    dateOfBirth: {
-      type: Date,
+    phoneNumber: {
+      type: String,
       required: true,
     },
     email: {
@@ -42,5 +42,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const User = mongoose.model("User", userSchema);
+// Check if the model already exists to avoid OverwriteModelError
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 module.exports = User;
