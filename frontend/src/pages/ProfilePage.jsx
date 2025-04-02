@@ -73,13 +73,14 @@ const ProfilePage = () => {
       setIsLoading(true);
       
       // Use the absolute URL with the correct backend port
+      // If your backend API is at localhost:3000/api/users/update/...
       const res = await fetch(`http://localhost:3000/user/update/${currentUser._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`, // Ensure token is sent
+          // Remove the Authorization header - we'll use cookies
         },
-        credentials: 'include', // Include cookies
+        credentials: 'include', // This line is crucial for sending cookies
         body: JSON.stringify(formData),
       });
       
