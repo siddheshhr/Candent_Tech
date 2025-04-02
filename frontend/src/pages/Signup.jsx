@@ -12,7 +12,7 @@ function Signup() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    dateOfBirth: '',
+    phoneNumber: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -33,7 +33,7 @@ function Signup() {
     if (
       !formData.firstName ||
       !formData.lastName ||
-      !formData.dateOfBirth ||
+      !formData.phoneNumber ||
       !formData.email ||
       !formData.password ||
       !formData.confirmPassword
@@ -57,7 +57,7 @@ function Signup() {
         body: JSON.stringify({
           firstName: formData.firstName,
           lastName: formData.lastName,
-          dateOfBirth: formData.dateOfBirth, // Expected format: YYYY-MM-DD
+          phoneNumber: formData.phoneNumber,
           email: formData.email,
           password: formData.password
         })
@@ -80,7 +80,6 @@ function Signup() {
       setLoading(false);
     }
   };
-  
 
   return (
     <div className="signup-container">
@@ -121,16 +120,15 @@ function Signup() {
             />
           </div>
 
-          <div className="signup-input-group signup-date-input">
-            <label>Date of Birth</label>
+          <div className="signup-input-group">
+            <label>Phone Number</label>
             <input
               type="text"
               className="signup-input"
-              placeholder="YYYY-MM-DD"
-              id="dateOfBirth"
+              placeholder="Enter Your Phone Number"
+              id="phoneNumber"
               onChange={handleChange}
             />
-            <span className="signup-calendar-icon">📅</span>
           </div>
 
           <div className="signup-password-fields">
@@ -171,13 +169,7 @@ function Signup() {
             )}
           </button>
 
-          {/* Display an Alert if there's an error */}
-          {errorMessage && (
-            <Alert className="mt-4" color="failure">
-              {errorMessage}
-            </Alert>
-          )}
-
+          {/* Bottom section adjusted to fit on one screen */}
           <div className="signup-divider">
             <span>Or</span>
           </div>

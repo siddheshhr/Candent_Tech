@@ -43,13 +43,14 @@ function OAuth() {
 
     return (
         <button 
-            className="signup-google-btn font-medium" 
-            type="button" 
-            onClick={handleGoogleSignIn}
-        >
-            <img src={ima} alt="Google" />
-            Continue with Google
-        </button>
+        className="signup-google-btn font-medium transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-blue-500" 
+        type="button" 
+        onClick={handleGoogleSignIn}
+      >
+        <img src={ima} alt="Google" className="inline-block mr-2" style={{ width: '20px', height: '20px' }} />
+        Continue with Google
+      </button>
+      
     );
 }
 
