@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
@@ -22,6 +22,10 @@ const LeadsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [filteredLeads, setFilteredLeads] = useState([]);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [leadsPerPage] = useState(4);
 
   /**
    * Sample data representing leads with their progress through a 5-stage sales pipeline
@@ -59,6 +63,30 @@ const LeadsPage = () => {
       status: ['Customer', 'Shipping', 'Payment', 'Confirm', 'Success'],
       currentStage: 4,
       isFullyCompleted: true
+    },
+    { 
+      id: 4, 
+      name: 'Mr Raskar', 
+      company: 'Candent', 
+      status: ['Customer', 'Shipping', 'Payment', 'Confirm', 'Success'],
+      currentStage: 4,
+      isFullyCompleted: true
+    },
+    { 
+      id: 4, 
+      name: 'mrs Raskar', 
+      company: 'Candent', 
+      status: ['Customer', 'Shipping', 'Payment', 'Confirm', 'Success'],
+      currentStage: 4,
+      isFullyCompleted: true
+    },
+    { 
+      id: 4, 
+      name: 'ms Raskar', 
+      company: 'Candent', 
+      status: ['Customer', 'Shipping', 'Payment', 'Confirm', 'Success'],
+      currentStage: 4,
+      isFullyCompleted: true
     }
   ]);
 
@@ -87,6 +115,8 @@ const LeadsPage = () => {
     }
     
     setFilteredLeads(results);
+    // Reset to first page when filters change
+    setCurrentPage(1);
   }, [leads, searchTerm, statusFilter]);
 
   const toggleSidebar = () => {
@@ -202,6 +232,87 @@ const LeadsPage = () => {
     return filteredLeads.length > 0 ? filteredLeads : leads;
   };
 
+  // Get current leads for pagination
+  const indexOfLastLead = currentPage * leadsPerPage;
+  const indexOfFirstLead = indexOfLastLead - leadsPerPage;
+  const currentLeads = getFilteredData().slice(indexOfFirstLead, indexOfLastLead);
+  
+  // Calculate total pages
+  const totalLeads = getFilteredData().length;
+  const totalPages = Math.ceil(totalLeads / leadsPerPage);
+
+  // Change page handlers
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToPage = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
+
+  // Render pagination controls
+  const renderPagination = () => {
+    if (totalLeads === 0) return null;
+
+    // Determine which page numbers to show
+    const pageNumbers = [];
+    
+    // Always add current page
+    if (currentPage > 0) pageNumbers.push(currentPage);
+    
+    // Add page 2 if we're showing page 1
+    if (currentPage === 1 && totalPages > 1) pageNumbers.push(2);
+    
+    // Sort page numbers to ensure they're in order
+    pageNumbers.sort((a, b) => a - b);
+    
+    return (
+      <div className="flex justify-center items-center mt-6 mb-4">
+        {/* Previous button */}
+        <button 
+          onClick={goToPreviousPage}
+          disabled={currentPage === 1}
+          className={`mx-1 px-4 py-2 rounded-md flex items-center justify-center 
+                    ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+        >
+          &lt;
+        </button>
+        
+        {/* Page numbers */}
+        {pageNumbers.map(number => (
+          <button
+            key={number}
+            onClick={() => goToPage(number)}
+            className={`mx-1 w-8 h-8 rounded-md flex items-center justify-center 
+                      ${currentPage === number ? 'bg-gray-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+          >
+            {number}
+          </button>
+        ))}
+        
+        {/* Next button */}
+        <button 
+          onClick={goToNextPage}
+          disabled={currentPage === totalPages}
+          className={`mx-1 px-4 py-2 rounded-md flex items-center justify-center 
+                    ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+        >
+          &gt;
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className="flex h-screen">
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
@@ -295,7 +406,7 @@ const LeadsPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {getFilteredData().map((lead) => (
+                {currentLeads.map((lead) => (
                 <tr 
                   key={lead.id}
                   className="shadow-md rounded-lg bg-white transition-colors duration-200 hover:shadow-lg hover:bg-gray-100"
@@ -321,7 +432,7 @@ const LeadsPage = () => {
                   </tr>
                 ))}
                 
-                {getFilteredData().length === 0 && (
+                {currentLeads.length === 0 && (
                   <tr>
                     <td colSpan="4" className="text-center py-8 text-gray-500">
                       No leads found matching your criteria
@@ -331,10 +442,8 @@ const LeadsPage = () => {
               </tbody>
             </table>
 
-            {/* Pagination indicator */}
-            <div className="pt-4 text-center text-gray-500">
-              {getFilteredData().length > 0 ? `Page 1 of 8` : 'No results'}
-            </div>
+            {/* Pagination controls */}
+            {renderPagination()}
           </div>
         <div className="mt-auto">
             <Footer />
