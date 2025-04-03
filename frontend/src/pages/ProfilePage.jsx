@@ -24,18 +24,23 @@ const ProfilePage = () => {
 
   // Update formData if currentUser changes
   useEffect(() => {
-    if (currentUser) {
-      setFormData({
-        firstName: currentUser.firstName || '',
-        lastName: currentUser.lastName || '',
-        email: currentUser.email || '',
-        phoneNumber: currentUser.phoneNumber || '',
-        role: currentUser.role || '',
-        gender: 'Select',
-        company: 'Details Inc.' // This could be retrieved from Redux if available
-      });
-    }
-  }, [currentUser]);
+    const fetchCurrentUser = async () => {
+      try {
+        const res = await fetch('http://localhost:3000/user/profile', {
+          method: 'GET',
+          credentials: 'include'
+        });
+        if (res.ok) {
+          const data = await res.json();
+          dispatch({ type: 'UPDATE_SUCCESS', payload: data });
+        }
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+      }
+    };
+    fetchCurrentUser();
+  }, [dispatch]);
+  
 
   const [isEditing, setIsEditing] = useState(false);
   const [updateMessage, setUpdateMessage] = useState(null);
@@ -76,14 +81,14 @@ const ProfilePage = () => {
       const res = await fetch(`http://localhost:3000/user/update/${currentUser._id}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`, // Ensure token is sent
+          'Content-Type': 'application/json'
         },
-        credentials: 'include', // Include cookies
+        credentials: 'include',
         body: JSON.stringify(formData),
       });
       
       
+        
       if (!res.ok) {
         const errorData = await res.text();
         let errorMessage;
