@@ -11,8 +11,20 @@ export default function Navbar({ toggleSidebar }) {
   const currentUser = useSelector((state) => state.user.currentUser);
 
   const handleSignOut = () => {
-    // Implement sign-out functionality here
+    // Clear all cookies
+    document.cookie.split(";").forEach((cookie) => {
+      const name = cookie.split("=")[0].trim();
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+    });
+  
+    // Optionally clear localStorage/sessionStorage if used
+    localStorage.clear();
+    sessionStorage.clear();
+  
+    // Redirect to sign-in page
+    window.location.href = "/signin"; // adjust path as per your routing setup
   };
+  
 
   return (
     <header className="bg-candentBlue text-white h-16 flex items-center px-4 justify-between shadow-md">
