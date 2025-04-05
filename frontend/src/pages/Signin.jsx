@@ -37,8 +37,12 @@ function Signin() {
       const res = await fetch('http://localhost:3000/auth/signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Add this line
         body: JSON.stringify(formData)
       });
+      
+      
+      
       const data = await res.json();
       
       if (!res.ok) {

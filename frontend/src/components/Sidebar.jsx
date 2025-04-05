@@ -21,18 +21,29 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const sidebarWidth = isOpen ? 'w-64' : 'w-16';
 
   // Handle logout process with Toastify notification
-  const handleLogout = () => {
-    // Clear user session data here, for example:
-    // localStorage.removeItem('authToken');
+//   import { toast } from "react-toastify";
+// import { useNavigate } from "react-router-dom";
 
-    // Show a sign out notification using React Toastify
-    toast.success("Signed Out!");
+const handleLogout = () => {
+  // Clear cookies
+  document.cookie.split(";").forEach((cookie) => {
+    const name = cookie.split("=")[0].trim();
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+  });
 
-    // Redirect to the sign in page after a brief delay to allow the toast to show
-    setTimeout(() => {
-      navigate('/signin');
-    }, 1000);
-  };
+  // Clear storage
+  localStorage.clear();
+  sessionStorage.clear();
+
+  // Show a sign-out notification
+  toast.success("Signed out!", { autoClose: 1000 }); // close after 1 second
+  window.location.href = "/signin";
+  // Navigate to sign-in after toast
+  // setTimeout(() => {
+  //   navigate("/signin");
+  // }, 1000);
+};
+
 
   return (
     <>
