@@ -49,7 +49,8 @@
 //     message,
 //   });
 // });
-require("dotenv").config();
+
+require('dotenv').config();
 const express = require("express");
 const mongoose = require("mongoose");
 // const cors = require("cors");
@@ -57,6 +58,8 @@ const authRoutes = require("./routes/auth_route.js");
 const userRoutes = require("./routes/user_route.js");
 const cookieParser = require("cookie-parser");
 // const cookieParser = require('cookie-parser');
+// index.js (already in your code)
+const leadRoutes = require("./routes/lead_routes.js");
 
 const app = express();
 const PORT = 3000;
@@ -83,6 +86,7 @@ app.use(cookieParser()); // for handling cookies
 // app.use(cookieParser());
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
+app.use("/api/leads", leadRoutes); // Mounts the lead routes at /api/leads
 
 app.get("/test", (req, res) => {
   res.json({ message: "API is working!" });
