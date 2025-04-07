@@ -178,10 +178,11 @@ const ProfilePage = () => {
               ))}
             </div>
           </div>
-        </main>
-        <div className="mt-auto">
-          <Footer />
+          <div className="mt-auto">
+            <Footer />
         </div>
+        </main>
+        
       </div>
     </div>
   );

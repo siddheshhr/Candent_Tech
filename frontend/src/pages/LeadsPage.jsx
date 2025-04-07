@@ -783,7 +783,8 @@ const LeadsPage = () => {
                     </td>
                     <td className="p-3 text-right flex justify-end space-x-2">
                       <Link
-                        to={`/leads/${lead.id}`}
+                        // to={`/leads/${lead.id}`}
+                        to={'/personalinfo'}
                         className="inline-flex items-center px-3 py-2 bg-[#51A1E0] text-white rounded-lg hover:bg-[#4086ba] hover:shadow-lg transition-transform transform hover:scale-105"
                       >
                         View Details
@@ -808,10 +809,11 @@ const LeadsPage = () => {
             </table>
             {renderPagination()}
           </div>
-        </main>
-        <div className="mt-auto">
+          <div className="mt-auto">
           <Footer />
         </div>
+        </main>
+        
       </div>
     </div>
   );

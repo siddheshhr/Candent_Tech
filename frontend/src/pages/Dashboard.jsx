@@ -179,7 +179,7 @@ export default function Dashboard() {
                 <div>
                   <h3 className="text-gray-500 text-lg">Total Leads</h3>
                   <p className="text-4xl font-bold text-gray-800 mt-2">
-                    1,012
+                    5
                   </p>
                 </div>
               </div>
@@ -202,7 +202,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <h3 className="text-gray-500 text-lg">Total Opportunities</h3>
-                  <p className="text-4xl font-bold text-gray-800 mt-2">560</p>
+                  <p className="text-4xl font-bold text-gray-800 mt-2">0</p>
                 </div>
               </div>
               <div className="mt-4 flex items-center text-green-500 gap-2">
@@ -222,7 +222,7 @@ export default function Dashboard() {
             {/* Pink card */}
             <StatsCard
               icon={<PieChart size={24} />}
-              value="1k"
+              value="5"
               label="Total Leads"
               bgColor="bg-pink-100"
               iconCircle="bg-pink-200"
@@ -232,7 +232,7 @@ export default function Dashboard() {
             {/* Cream card */}
             <StatsCard
               icon={<Briefcase size={24} />}
-              value="560"
+              value="0"
               label="Total Opportunity"
               bgColor="bg-amber-100"
               iconCircle="bg-amber-200"
@@ -242,7 +242,7 @@ export default function Dashboard() {
             {/* Green card */}
             <StatsCard
               icon={<Percent size={24} />}
-              value="56%"
+              value="0%"
               label="Conversion Rate"
               bgColor="bg-green-100"
               iconCircle="bg-green-200"
@@ -252,7 +252,7 @@ export default function Dashboard() {
             {/* Purple card */}
             <StatsCard
               icon={<Users size={24} />}
-              value="80"
+              value="4  "
               label="Total Users"
               bgColor="bg-purple-100"
               iconCircle="bg-purple-200"
