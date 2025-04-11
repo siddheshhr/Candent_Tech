@@ -49,13 +49,17 @@
 //     message,
 //   });
 // });
-require("dotenv").config();
+
+require('dotenv').config();
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
+// const cors = require("cors");
 const authRoutes = require("./routes/auth_route.js");
 const userRoutes = require("./routes/user_route.js");
 const cookieParser = require("cookie-parser");
+// const cookieParser = require('cookie-parser');
+// index.js (already in your code)
+const leadRoutes = require("./routes/lead_routes.js");
 
 const app = express();
 const PORT = 3000;
@@ -71,16 +75,18 @@ mongoose
   });
 
 // Configure CORS to allow credentials and specify the frontend origin
+const cors = require('cors');
 app.use(cors({
-  origin: "http://localhost:5173", // Frontend URL
-  credentials: true,
+  origin: 'http://localhost:5173', // or whatever your frontend URL is
+  credentials: true // This is important for cookies
 }));
 
 app.use(express.json());
 app.use(cookieParser()); // for handling cookies
-
+// app.use(cookieParser());
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
+app.use("/api/leads", leadRoutes); // Mounts the lead routes at /api/leads
 
 app.get("/test", (req, res) => {
   res.json({ message: "API is working!" });
