@@ -1,4 +1,4 @@
-const User = require("../models/user");
+const User = require("../models/User");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
@@ -6,21 +6,21 @@ require("dotenv").config();
 const { errorHandler } = require("../utils/error");
 
 const signup = async (req, res, next) => {
-  
-  const { firstName, lastName, dateOfBirth, email, password } = req.body;
+  // Destructure phoneNumber instead of dateOfBirth
+  const { firstName, lastName, phoneNumber, email, password } = req.body;
 
-  if (!firstName || !lastName || !dateOfBirth || !email || !password) {
+  if (!firstName || !lastName || !phoneNumber || !email || !password) {
     return next(errorHandler(400, "All fields are required!"));
   }
-  
+
   const hashedPassword = bcryptjs.hashSync(password, 12);
 
   // Auto-assign username as email since we don't need a separate username field.
   const newUser = new User({
-    username: email,  // Use email as the username
+    username: email, // Use email as the username
     firstName,
     lastName,
-    dateOfBirth: new Date(dateOfBirth),
+    phoneNumber, // Use phoneNumber field here
     email,
     password: hashedPassword,
   });
@@ -66,12 +66,15 @@ const signin = async (req, res, next) => {
 };
 
 const google = async (req, res, next) => {
-  const { email, name, googlePhotoUrl } = req.body;
+  // Include phoneNumber in case it is provided via OAuth (optional)
+  const { email, name, googlePhotoUrl, phoneNumber } = req.body;
   
   try {
     // Validate required fields
     if (!email || !name) {
-      return next(errorHandler(400, "Email and name are required for Google authentication."));
+      return next(
+        errorHandler(400, "Email and name are required for Google authentication.")
+      );
     }
 
     // Check if the user already exists
@@ -90,7 +93,6 @@ const google = async (req, res, next) => {
       // Split the full name into parts
       const nameParts = name.trim().split(" ");
       const firstName = nameParts[0] || name;
-      // If more than one part exists, join them for lastName; otherwise, set a default
       const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "Not Provided";
 
       // Generate a random password for the new user
@@ -99,12 +101,15 @@ const google = async (req, res, next) => {
         Math.random().toString(36).slice(-8);
       const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
 
+      // Use provided phoneNumber if available; otherwise set a default placeholder
+      const phoneNumberValue = phoneNumber ? phoneNumber : "Not Provided";
+
       // Create a new user, auto-assigning username as the email
       const newUser = new User({
         username: email,
         firstName,
         lastName,
-        dateOfBirth: new Date(), // Use current date if DOB isn't provided via OAuth
+        phoneNumber: phoneNumberValue,
         email,
         password: hashedPassword,
         profilePicture: googlePhotoUrl || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
