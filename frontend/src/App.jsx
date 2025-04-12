@@ -5,8 +5,9 @@ import Signin from './pages/Signin';
 import SignupPage from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import LeadsPage from './pages/LeadsPage';
+import LeadDetailPage from './pages/LeadDetailsPage.jsx'; // Import the lead detail page
 import PersonalLeadPage from './pages/PersonalLeadPage';
-import ProfilePage from './pages/ProfilePage'; // Import the ProfilePage component
+import ProfilePage from './pages/ProfilePage';
 import LeadForm from './pages/LeadFormPage';
 import PrivateRoute from './components/PrivateRoute';
 import { ToastContainer } from 'react-toastify';
@@ -21,9 +22,12 @@ function App() {
               <Route path="/signup" element={<SignupPage />} />
               <Route element={<PrivateRoute />}>
                   <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/leads" element={<LeadsPage />} />
+                  <Route path="/leads">
+                      <Route index element={<LeadsPage />} />
+                      <Route path=":id" element={<LeadDetailPage />} />
+                  </Route>
                   <Route path="/personalinfo" element={<PersonalLeadPage />} />
-                  <Route path="/profile" element={<ProfilePage />} />  {/* New profile route */}
+                  <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/leadform" element={<LeadForm />} />
               </Route>
           </Routes>
