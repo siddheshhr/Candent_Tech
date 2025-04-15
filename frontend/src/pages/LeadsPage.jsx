@@ -464,6 +464,7 @@ import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import Leadform from '../pages/LeadFormPage';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -699,7 +700,7 @@ const [leadsPerPage] = useState(4);
               </div>
 
               <div className="flex space-x-2">
-                <Link to='/leadform'>
+                <Link to='/Leadform'>
                 <button className="bg-[#51A1E0] text-white px-4 py-2 rounded-lg flex items-center 
                                    hover:bg-[#4086ba] transition-colors hover:shadow-md">
                   <PlusCircle className="mr-2" size={20} /> Add Lead
