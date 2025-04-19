@@ -119,3 +119,45 @@ exports.deleteLead = async (req, res, next) => {
     next(err);
   }
 };
+
+/** 
+ * GET /api/dashboard/stats
+ * Returns totalLeads, totalCompanies, leadsPerMonth, recentLeads
+ */
+exports.getStats = async (req, res, next) => {
+  try {
+    // 1) total counts
+    const totalLeads = await Lead.countDocuments();
+    const totalCompanies = await Company.countDocuments();
+
+    // 2) group leads by year-month
+    const leadsPerMonth = await Lead.aggregate([
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m", date: "$leadAddedDate" } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]).exec();
+
+    // 3) fetch 5 most‐recent leads
+    const recentLeads = await Lead
+      .find({})
+      .sort({ leadAddedDate: -1 })
+      .limit(5)
+      .select("name company leadAddedDate")
+      .populate("company", "name")
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      totalLeads,
+      totalCompanies,
+      leadsPerMonth: leadsPerMonth.map(d => ({ month: d._id, count: d.count })),
+      recentLeads
+    });
+  } catch (err) {
+    next(err);
+  }
+};

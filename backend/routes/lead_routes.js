@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const leadController = require('../controller/lead_controller');
 
+//route to get stats
+router.get('/stats', leadController.getStats);
+
 // Route to add a new lead
 router.post('/add', leadController.createLead);  // Changed from addLead to createLead
 
@@ -16,5 +19,8 @@ router.put('/:id', leadController.updateLead);   // Uncommented this line
 
 // Route to delete a lead by ID
 router.delete('/:id', leadController.deleteLead);
+
+
+
 
 module.exports = router;
