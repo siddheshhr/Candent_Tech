@@ -10,12 +10,12 @@ import {
   CartesianGrid,
 } from 'recharts';
 
-export default function OpportunityChart({ data }) {
+export default function OpportunityChart({ data }) {  
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6">
-      <h2 className="text-xl font-semibold text-gray-700 mb-4">
+      {/* <h2 className="text-xl font-semibold text-gray-700 mb-4">
         Leads per Month
-      </h2>
+      </h2> */}
       <ResponsiveContainer width="100%" height={280}>
         <BarChart
           data={data}

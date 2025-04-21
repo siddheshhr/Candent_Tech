@@ -5,6 +5,7 @@ import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import Leadform from '../pages/LeadFormPage';
 import { useNavigate } from 'react-router-dom';
 import { Search, PlusCircle, Download, Filter, Check, X, Trash2 } from 'lucide-react';
 

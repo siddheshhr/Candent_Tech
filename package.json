@@ -15,12 +15,14 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
+    "jspdf": "^3.0.1",
     "mailgun.js": "^11.1.0",
     "mongodb": "^6.12.0",
     "mongoose": "^8.9.5",
     "nodemailer": "^6.10.0",
     "prompt-sync": "^4.2.0",
     "react": "^19.0.0",
+    "recharts": "^2.15.3",
     "redux-persist": "^6.0.0"
   }
 }
