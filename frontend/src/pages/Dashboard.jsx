@@ -1,168 +1,118 @@
-import React, { useState } from 'react';
+// src/pages/Dashboard.jsx
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { motion } from 'framer-motion';
-import Navbar from '../components/Navbar';
+import jsPDF from 'jspdf';
 import Sidebar from '../components/Sidebar';
-import Footer from '../components/Footer';
-import StatsCard from '../components/StatsCard';
+import Navbar  from '../components/Navbar';
+import Footer  from '../components/Footer';
+import StatsCard        from '../components/StatsCard';
 import OpportunityChart from '../components/OpportunityChart';
-import ProgressItem from '../components/ProgressItem';
+import ProgressItem     from '../components/ProgressItem';
 import { PieChart, Briefcase, Percent, Users, Download } from 'lucide-react';
 
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.2,
-      delayChildren: 0.3,
-    },
+    transition: { staggerChildren: 0.2, delayChildren: 0.3 },
   },
 };
-
 const itemVariants = {
   hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { type: 'spring', stiffness: 120 },
-  },
+  visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 120 } },
 };
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
-  const recentProjects = [
-    {
-      icon: 'chakra',
-      name: 'Chakra Soft UI Version',
-      progress: 60,
-      budget: '$14,000',
-      color: 'purple',
-    },
-    {
-      icon: 'progress',
-      name: 'Add Progress Track',
-      progress: 10,
-      budget: '$3,000',
-      color: 'blue',
-    },
-    {
-      icon: 'platform',
-      name: 'Fix Platform Errors',
-      progress: 100,
-      budget: 'Not set',
-      color: 'green',
-    },
-    {
-      icon: 'mobile',
-      name: 'Launch our Mobile App',
-      progress: 100,
-      budget: '$32,000',
-      color: 'green',
-    },
-    {
-      icon: 'pricing',
-      name: 'Add the New Pricing Page',
-      progress: 25,
-      budget: '$400',
-      color: 'blue',
-    },
-    {
-      icon: 'shop',
-      name: 'Redesign New Online Shop',
-      progress: 40,
-      budget: '$7,600',
-      color: 'red',
-    },
-  ];
+  const [stats, setStats] = useState({
+    totalLeads: 0,
+    totalCompanies: 0,
+    totalOpportunities: 0,
+    leadsPerMonth: [],    // [{ month: '2025-04', count: 5 }, …]
+    recentLeads: []       // [{ name, company: {name}, leadAddedDate }, …]
+  });
 
-  // Render the icon based on the project type
-  const renderIcon = (iconType) => {
-    switch (iconType) {
-      case 'chakra':
-        return (
-          <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center text-white">
-            Ch
-          </div>
-        );
-      case 'progress':
-        return (
-          <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center text-white">
-            ▲
-          </div>
-        );
-      case 'platform':
-        return (
-          <div className="w-8 h-8 bg-green-500 rounded flex items-center justify-center text-white">
-            +
-          </div>
-        );
-      case 'mobile':
-        return (
-          <div className="w-8 h-8 bg-green-500 rounded flex items-center justify-center text-white">
-            ◯
-          </div>
-        );
-      case 'pricing':
-        return (
-          <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center text-white">
-            ◆
-          </div>
-        );
-      case 'shop':
-        return (
-          <div className="w-8 h-8 bg-red-500 rounded flex items-center justify-center text-white">
-            In
-          </div>
-        );
-      default:
-        return (
-          <div className="w-8 h-8 bg-gray-500 rounded flex items-center justify-center text-white">
-            ?
-          </div>
-        );
-    }
+  useEffect(() => {
+    axios.get('http://localhost:3000/api/leads/stats')
+      .then(res => {
+        if (res.data.success) {
+          setStats({
+            totalLeads: res.data.totalLeads,
+            totalCompanies: res.data.totalCompanies,
+            totalOpportunities: res.data.totalOpportunities || 0,
+            leadsPerMonth: res.data.leadsPerMonth,
+            recentLeads: res.data.recentLeads
+          });
+        }
+      })
+      .catch(console.error);
+  }, []);
+
+  // Conversion rate = opportunities ÷ leads
+  const conversionRate = stats.totalLeads > 0
+    ? Math.round((stats.totalOpportunities / stats.totalLeads) * 100)
+    : 0;
+
+  // PDF export
+  const handleExport = () => {
+    const doc = new jsPDF();
+    let y = 20;
+    doc.setFontSize(18);
+    doc.text('Dashboard Report', 14, y); y += 10;
+    doc.setFontSize(12);
+    doc.text(`Total Leads: ${stats.totalLeads}`, 14, y); y += 8;
+    doc.text(`Total Companies: ${stats.totalCompanies}`, 14, y); y += 8;
+    doc.text(`Total Opportunities: ${stats.totalOpportunities}`, 14, y); y += 12;
+    doc.text('Leads per Month:', 14, y); y += 8;
+    stats.leadsPerMonth.forEach(item => {
+      doc.text(` • ${item.month}: ${item.count}`, 18, y);
+      y += 6;
+    });
+    y += 8;
+    doc.text('Recent Leads:', 14, y); y += 8;
+    stats.recentLeads.forEach(l => {
+      const date = new Date(l.leadAddedDate).toLocaleDateString();
+      doc.text(` • ${l.name} (${l.company?.name || '—'}) on ${date}`, 18, y);
+      y += 6;
+    });
+    doc.save('dashboard_report.pdf');
   };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-
+      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar}/>
       <div className="flex flex-col flex-1">
-        <Navbar toggleSidebar={toggleSidebar} />
+        <Navbar toggleSidebar={toggleSidebar}/>
 
-        {/* Page Content */}
         <motion.div
           className="p-6 flex-grow"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          {/* Header Section */}
+          {/* Header */}
           <motion.div
             className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4"
             variants={itemVariants}
           >
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                Welcome, Alice
-              </h1>
-              <p className="text-gray-500 text-lg">
-                Here's your dashboard overview
-              </p>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome, Alice</h1>
+              <p className="text-gray-500 text-lg">Here's your dashboard overview</p>
             </div>
             <motion.button
+              onClick={handleExport}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="bg-[#3B9EC1] text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2"
             >
-              <Download size={20} />
-              <span>Export Report</span>
+              <Download size={20}/> Export Report
             </motion.button>
           </motion.div>
 
-          {/* Main Metrics Grid (two big cards) */}
+          {/* Two large metric cards */}
           <motion.div
             className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
             variants={containerVariants}
@@ -170,193 +120,124 @@ export default function Dashboard() {
             <motion.div
               className="bg-white p-8 rounded-2xl shadow-xl"
               variants={itemVariants}
-              whileHover={{ y: -5 }}
             >
               <div className="flex items-center gap-4">
                 <div className="p-4 bg-blue-100 rounded-xl">
-                  <Users className="text-blue-600" size={28} />
+                  <Users className="text-blue-600" size={28}/>
                 </div>
                 <div>
                   <h3 className="text-gray-500 text-lg">Total Leads</h3>
                   <p className="text-4xl font-bold text-gray-800 mt-2">
-                    5
+                    {stats.totalLeads}
                   </p>
                 </div>
               </div>
-              <div className="mt-4 flex items-center text-green-500 gap-2">
-                <span className="bg-green-100 px-2 py-1 rounded-md text-sm">
-                  ↑ 12%
-                </span>
-                <span className="text-sm">vs last month</span>
-              </div>
             </motion.div>
-
             <motion.div
               className="bg-white p-8 rounded-2xl shadow-xl"
               variants={itemVariants}
-              whileHover={{ y: -5 }}
             >
               <div className="flex items-center gap-4">
                 <div className="p-4 bg-orange-100 rounded-xl">
-                  <Briefcase className="text-orange-600" size={28} />
+                  <Briefcase className="text-orange-600" size={28}/>
                 </div>
                 <div>
-                  <h3 className="text-gray-500 text-lg">Total Opportunities</h3>
-                  <p className="text-4xl font-bold text-gray-800 mt-2">0</p>
+                  <h3 className="text-gray-500 text-lg">Total Companies</h3>
+                  <p className="text-4xl font-bold text-gray-800 mt-2">
+                    {stats.totalCompanies}
+                  </p>
                 </div>
-              </div>
-              <div className="mt-4 flex items-center text-green-500 gap-2">
-                <span className="bg-green-100 px-2 py-1 rounded-md text-sm">
-                  ↑ 8%
-                </span>
-                <span className="text-sm">vs last month</span>
               </div>
             </motion.div>
           </motion.div>
 
-          {/* 4 PASTEL STAT CARDS (like the screenshot) */}
+          {/* Four small stats cards */}
           <motion.div
             className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
             variants={containerVariants}
           >
-            {/* Pink card */}
             <StatsCard
-              icon={<PieChart size={24} />}
-              value="5"
+              icon={<PieChart size={24}/>}
+              value={stats.totalLeads}
               label="Total Leads"
               bgColor="bg-pink-100"
               iconCircle="bg-pink-200"
               iconColor="text-pink-600"
             />
-
-            {/* Cream card */}
             <StatsCard
-              icon={<Briefcase size={24} />}
-              value="0"
-              label="Total Opportunity"
+              icon={<Briefcase size={24}/>}
+              value={stats.totalCompanies}
+              label="Companies"
               bgColor="bg-amber-100"
               iconCircle="bg-amber-200"
               iconColor="text-amber-600"
             />
-
-            {/* Green card */}
             <StatsCard
-              icon={<Percent size={24} />}
-              value="0%"
+              icon={<Percent size={24}/>}
+              value={`${conversionRate}%`}
               label="Conversion Rate"
               bgColor="bg-green-100"
               iconCircle="bg-green-200"
               iconColor="text-green-600"
             />
-
-            {/* Purple card */}
             <StatsCard
-              icon={<Users size={24} />}
-              value="4  "
-              label="Total Users"
-              bgColor="bg-purple-100"
-              iconCircle="bg-purple-200"
-              iconColor="text-purple-600"
+              icon={<Briefcase size={24}/>}
+              value={stats.totalOpportunities}
+              label="Opportunities"
+              bgColor="bg-blue-100"
+              iconCircle="bg-blue-200"
+              iconColor="text-blue-600"
             />
           </motion.div>
 
-          {/* Charts & Recent Projects */}
+          {/* Charts & Recent Leads */}
           <motion.div
             className="grid grid-cols-1 xl:grid-cols-2 gap-8"
             variants={containerVariants}
           >
-            {/* Left Column: Charts */}
             <motion.div className="space-y-8" variants={containerVariants}>
               <motion.div variants={itemVariants}>
-                <OpportunityChart />
+                <OpportunityChart data={stats.leadsPerMonth}/>
               </motion.div>
               <motion.div variants={itemVariants}>
                 <ProgressItem />
               </motion.div>
             </motion.div>
 
-            {/* Right Column: Project Tracking */}
             <motion.div
               className="bg-white rounded-2xl shadow-xl p-6"
               variants={itemVariants}
-              whileHover={{ scale: 1.01 }}
             >
               <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    Recent Projects
-                  </h2>
-                  <div className="flex items-center mt-1">
-                    <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center text-white text-xs">
-                      ✓
-                    </div>
-                    <span className="text-sm text-gray-500 ml-2">
-                      30 done this month
-                    </span>
-                  </div>
-                </div>
-                <button className="text-gray-400">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+                <h2 className="text-2xl font-bold text-gray-800">Recent Leads</h2>
+                <span className="text-gray-500">{stats.recentLeads.length} added</span>
+              </div>
+              <div className="grid grid-cols-12 border-b pb-3 mb-2 text-sm text-gray-500 uppercase">
+                <div className="col-span-5">Lead</div>
+                <div className="col-span-4">Company</div>
+                <div className="col-span-3">Date</div>
+              </div>
+              {stats.recentLeads.length > 0 ? (
+                stats.recentLeads.map((lead, idx) => (
+                  <div
+                    key={idx}
+                    className="grid grid-cols-12 py-3 items-center border-b last:border-0"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 
-                         1 1 0 010 2zm0 7a1 1 0 110-2 
-                         1 1 0 010 2zm0 7a1 1 0 110-2 
-                         1 1 0 010 2z"
-                    />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Table Header */}
-              <div className="grid grid-cols-12 border-b pb-3 mb-2">
-                <div className="col-span-5 text-sm text-gray-500 font-medium uppercase">
-                  Companies
-                </div>
-                <div className="col-span-3 text-sm text-gray-500 font-medium uppercase">
-                  Budget
-                </div>
-                <div className="col-span-4 text-sm text-gray-500 font-medium uppercase">
-                  Completion
-                </div>
-              </div>
-
-              {/* Table Rows */}
-              {recentProjects.map((project, index) => (
-                <div
-                  key={index}
-                  className="grid grid-cols-12 py-4 items-center border-b last:border-0"
-                >
-                  <div className="col-span-5 flex items-center">
-                    {renderIcon(project.icon)}
-                    <span className="ml-3 font-medium">{project.name}</span>
-                  </div>
-                  <div className="col-span-3 text-gray-800">{project.budget}</div>
-                  <div className="col-span-4">
-                    <div className="flex items-center">
-                      <span
-                        className={`text-${project.color}-500 mr-2 text-sm font-medium`}
-                      >
-                        {project.progress}%
-                      </span>
-                      <div className="w-full bg-gray-200 rounded-full h-1.5">
-                        <div
-                          className={`bg-${project.color}-500 h-1.5 rounded-full`}
-                          style={{ width: `${project.progress}%` }}
-                        ></div>
-                      </div>
+                    <div className="col-span-5 flex items-center">
+                      <div className="w-8 h-8 bg-gray-200 rounded-full mr-3" />
+                      <span className="font-medium">{lead.name}</span>
+                    </div>
+                    <div className="col-span-4 text-gray-800">
+                      {lead.company?.name || '—'}
+                    </div>
+                    <div className="col-span-3 text-gray-600">
+                      {new Date(lead.leadAddedDate).toLocaleDateString()}
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-center text-gray-500 py-4">No recent leads.</p>
+              )}
             </motion.div>
           </motion.div>
         </motion.div>

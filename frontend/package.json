@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.6.1",
+    "axios": "^1.8.4",
     "chart.js": "^4.4.8",
     "firebase": "^11.5.0",
     "flowbite-react": "^0.10.2",
     "framer-motion": "^12.5.0",
+    "jspdf": "^3.0.1",
     "lucide": "^0.477.0",
     "lucide-react": "^0.477.0",
     "react": "^19.0.0",
@@ -24,6 +26,7 @@
     "react-router": "^7.3.0",
     "react-router-dom": "^7.3.0",
     "react-toastify": "^11.0.5",
+    "recharts": "^2.15.3",
     "redux-persist": "^6.0.0"
   },
   "devDependencies": {
