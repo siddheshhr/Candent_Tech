@@ -4,8 +4,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Plus, Trash2 } from 'lucide-react';
 
-export default function LeadForm() {
-  const [isEditing, setIsEditing] = useState(false);
+export default function LeadFormPage() {
+  const navigate = useNavigate();
   const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     profilePicture: '',
@@ -14,7 +14,7 @@ export default function LeadForm() {
     contact: '',
     email: '',
     personalEmail: '',
-    address: '',
+    description: '',
     birthdate: '',
     leadAddedDate: new Date().toISOString().split('T')[0],
     companyMembers: [
@@ -35,13 +35,12 @@ export default function LeadForm() {
     companyCity: '',
     companyState: '',
     companyCountry: '',
-    companyMembers: [
-      { role: 'CEO', name: '', email: '', contact: '' },
-      { role: 'HR', name: '', email: '', contact: '' }
-    ],
-    phases: [{ name: '', date: '' }],
-    leadAddedDate: new Date().toISOString().split('T')[0]
   });
+
+  const inputClass = `w-full px-4 py-2 bg-gray-50 rounded-lg focus:outline-none`;
+  const errorInputClass = `${inputClass} border border-red-500 text-red-600`;
+  const nestedInputClass = `w-full px-4 py-2 bg-white rounded-lg focus:outline-none border border-gray-300`;
+  const nestedErrorInputClass = `w-full px-4 py-2 bg-white rounded-lg focus:outline-none border border-red-500 text-red-600`;
 
   const validateForm = () => {
     const errs = {};
@@ -72,8 +71,8 @@ export default function LeadForm() {
       if (!p.date) errs[`phase${i}date`] = 'Required';
     });
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
   };
 
   const handleSave = async () => {
@@ -163,14 +162,14 @@ export default function LeadForm() {
             </div>
             <input
               type="file"
-              id="profilePicture"
               accept="image/*"
+              id="profilePic"
               onChange={handleProfilePicture}
               className="hidden"
             />
             <label
-              htmlFor="profilePicture"
-              className="absolute bottom-0 right-0 bg-blue-600 p-2 rounded-full text-white cursor-pointer hover:bg-blue-700"
+              htmlFor="profilePic"
+              className="absolute bottom-0 right-0 bg-blue-600 p-2 rounded-full text-white cursor-pointer"
             >
               <Camera size={16} />
             </label>
@@ -201,12 +200,10 @@ export default function LeadForm() {
           <div className="col-span-full space-y-1">
             <label className="text-gray-700">Description *</label>
             <textarea
+              rows={3}
               value={formData.description}
               onChange={(e) => setFormData((f) => ({ ...f, description: e.target.value }))}
-              disabled={!isEditing}
               className={errors.description ? errorInputClass : inputClass}
-              placeholder="Enter description"
-              rows={3}
             />
             {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
           </div>
@@ -236,6 +233,7 @@ export default function LeadForm() {
           <div className="col-span-full space-y-1">
             <label className="text-gray-700">Address *</label>
             <textarea
+              rows={2}
               value={formData.companyAddress}
               onChange={(e) => setFormData((f) => ({ ...f, companyAddress: e.target.value }))}
               className={errors.companyAddress ? errorInputClass : inputClass}
@@ -262,8 +260,8 @@ export default function LeadForm() {
                     onChange={(e) => handleCompanyMemberChange(i, field, e.target.value)}
                     className={errors[`member${i}${field}`] ? nestedErrorInputClass : nestedInputClass}
                   />
-                  {errors[`member${index}role`] && (
-                    <p className="text-red-500 text-sm">{errors[`member${index}role`]}</p>
+                  {errors[`member${i}${field}`] && (
+                    <p className="text-red-500 text-sm">{errors[`member${i}${field}`]}</p>
                   )}
                 </div>
               ))}
