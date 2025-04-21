@@ -201,15 +201,12 @@ export default function LeadForm() {
           <div className="col-span-full space-y-1">
             <label className="text-gray-700">Description *</label>
             <textarea
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              disabled={!isEditing}
-              className={errors.address ? errorInputClass : inputClass}
-              placeholder="Enter address"
-              rows={3}
               value={formData.description}
               onChange={(e) => setFormData((f) => ({ ...f, description: e.target.value }))}
+              disabled={!isEditing}
               className={errors.description ? errorInputClass : inputClass}
+              placeholder="Enter description"
+              rows={3}
             />
             {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
           </div>
