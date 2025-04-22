@@ -6,8 +6,8 @@ import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Leadform from '../pages/LeadFormPage';
+import { ArrowRight, Clock, Check, X, Trash2, Search, PlusCircle, Download, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Search, PlusCircle, Download, Filter, Check, X, Trash2 } from 'lucide-react';
 
 const LeadsPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -133,32 +133,35 @@ const LeadsPage = () => {
             'relative w-8 h-8 rounded-full border-2 flex items-center justify-center ' +
             'transition-transform duration-300 hover:scale-105 ';
           let lineClasses = 'flex-auto h-0.5 transition-colors duration-300 mt-4 ';
+          let statusIcon = null;
 
           switch (phase.status) {
             case 'Completed':
               circleClasses += 'border-green-500 bg-green-500 text-white';
               lineClasses += 'bg-green-500';
+              statusIcon = <Check className="w-4 h-4" />;
               break;
             case 'In Progress':
-              circleClasses += 'border-yellow-500 bg-yellow-500 text-white';
-              lineClasses += 'bg-yellow-500';
+              circleClasses += 'border-[#E8CC03] bg-[#E8CC03] text-white';
+              lineClasses += 'bg-[#E8CC03]';
+              statusIcon = <Clock className="w-4 h-4" />;
               break;
             case 'Stopped':
               circleClasses += 'border-red-500 bg-red-500 text-white';
               lineClasses += 'bg-red-500';
+              statusIcon = <X className="w-4 h-4" />;
               break;
             default: // 'Not Started' or undefined
               circleClasses += 'border-gray-300 bg-white text-gray-400';
               lineClasses += 'bg-gray-300';
+              statusIcon = <X className="w-4 h-4" />;
           }
 
           return (
             <React.Fragment key={phase.name}>
               <div className="flex flex-col items-center">
                 <div className={circleClasses}>
-                  {phase.status === 'Completed' ? (
-                    <Check className="w-4 h-4" />
-                  ) : null}
+                  {statusIcon}
                 </div>
                 <span className="mt-1 text-xs text-gray-600">{phase.name}</span>
               </div>

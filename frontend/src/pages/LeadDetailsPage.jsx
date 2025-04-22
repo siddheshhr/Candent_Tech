@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import Sidebar from '../components/Sidebar';
-import DiscussionSection from '../components/DiscussionSection';
+import CommentSection from '../components/CommentSection';
 import {
   Trash2,
   Plus,
@@ -130,6 +130,7 @@ function LeadDetailPage() {
   const toggleSortOrder = () =>
     setSortOrder(o => (o === 'asc' ? 'desc' : 'asc'));
 
+  // Fixed contacts access - use lead.contacts directly as in original code
   const filteredContacts = lead?.contacts?.filter(c =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
@@ -263,7 +264,6 @@ function LeadDetailPage() {
                 <div>Contact</div>
                 <div>Designation</div>
               </div>
-
               <div className="px-3 pb-3">
                 {sortedContacts.length > 0 ? (
                   sortedContacts.map((c, i) => (
@@ -316,7 +316,10 @@ function LeadDetailPage() {
               <h2 className="text-white font-semibold">Customize Phases</h2>
               <div className="flex space-x-2">
                 <button
-                  onClick={() => setIsEditingPhase(true)}
+                  onClick={() => {
+                    setEditingPhase({ name: '', date: '' });
+                    setIsEditingPhase(true);
+                  }}
                   className="bg-white rounded-full w-6 h-6 flex items-center justify-center text-[#4B7889]"
                 >
                   <Plus size={16} />
@@ -360,28 +363,38 @@ function LeadDetailPage() {
                         <span className="text-xs text-gray-500">
                           {new Date(phase.date).toLocaleDateString()}
                         </span>
+                        {isEditingPhase && (
+                          <button 
+                            onClick={() => handleDeletePhase(phase._id || phase.id)}
+                            className="mt-1 text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        )}
                       </div>
                     ))
                   ) : (
-                    <p className="text-center text-gray-500">No phases yet.</p>
+                    <p className="text-center text-gray-500 w-full">No phases yet.</p>
                   )}
                 </div>
               </div>
             </div>
           </div>
-
+          
           {/* Discussion Section */}
-          <DiscussionSection leadId={id} />
+          <div className="bg-white rounded-lg shadow-md mb-4 p-6">
+            <CommentSection leadId={id} />
+          </div>
         </div>
       </div>
 
       {/* Edit / Add Phase Modal */}
-      {editingPhase && (
+      {isEditingPhase && editingPhase && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-xl font-semibold mb-4">{
-              isEditingPhase && !editingPhase._id ? 'Add Phase' : 'Edit Phase'
-            }</h3>
+            <h3 className="text-xl font-semibold mb-4">
+              {editingPhase._id ? 'Edit Phase' : 'Add Phase'}
+            </h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Name</label>
@@ -410,17 +423,22 @@ function LeadDetailPage() {
             </div>
             <div className="mt-6 flex justify-end space-x-3">
               <button
-                onClick={() => setEditingPhase(null)}
+                onClick={() => {
+                  setEditingPhase(null);
+                  setIsEditingPhase(false);
+                }}
                 className="px-4 py-2 border rounded-lg hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
-                onClick={() =>
-                  editingPhase._id
-                    ? handleUpdatePhase(editingPhase)
-                    : handleAddPhase()
-                }
+                onClick={() => {
+                  if (editingPhase._id) {
+                    handleUpdatePhase(editingPhase);
+                  } else {
+                    handleAddPhase(editingPhase);
+                  }
+                }}
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
               >
                 Save

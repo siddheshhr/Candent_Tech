@@ -1,24 +1,27 @@
+// comment_routes.js
 const express = require('express');
 const router = express.Router();
-const commentController = require('../controllers/comment_controller');
-const { authenticateUser } = require('../middleware/authMiddleware');
+const commentController = require('../controller/comment_controller.js');
 
 // Get all comments for a lead
-router.get('/leads/:leadId/comments', authenticateUser, commentController.getCommentsByLeadId);
+router.get('/leads/:leadId/comments', commentController.getCommentsByLeadId);
 
-// Create a new comment
-router.post('/leads/:leadId/comments', authenticateUser, commentController.createComment);
+// Create a new comment for a lead
+router.post('/leads/:leadId/comments', commentController.createComment);
 
-// Reply to a comment
-router.post('/comments/:commentId/replies', authenticateUser, commentController.replyToComment);
+// Update a comment
+router.put('/comments/:commentId', commentController.updateComment);
 
 // Delete a comment
-router.delete('/comments/:commentId', authenticateUser, commentController.deleteComment);
+router.delete('/comments/:commentId', commentController.deleteComment);
 
-// Like/unlike a comment
-router.post('/comments/:commentId/like', authenticateUser, commentController.toggleLike);
+// Add a reply to a comment
+router.post('/comments/:commentId/replies', commentController.addReply);
 
-// Get replies for a comment
-router.get('/comments/:commentId/replies', authenticateUser, commentController.getReplies);
+// Update a reply
+router.put('/comments/:commentId/replies/:replyId', commentController.updateReply);
+
+// Delete a reply
+router.delete('/comments/:commentId/replies/:replyId', commentController.deleteReply);
 
 module.exports = router;
