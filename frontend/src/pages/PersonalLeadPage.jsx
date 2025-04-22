@@ -1,163 +1,75 @@
-// import React from 'react';
-// import { useState } from 'react';
-// import Navbar from '../components/Navbar';
-// import Sidebar from '../components/Sidebar';
-// import LeadCard from '../components/LeadCard';
-// import LeadDescription from '../components/LeadDescription';
-// import ContactsTable from '../components/ContactsTable';
-// import CustomizePhases from '../components/CustomizePhases';
-// import Discussion from '../components/Discussion';
-// import Footer from '../components/Footer';
-// import Soham from '../assets/Soham.png';
-
-// function PersonalLeadPage() {
-//   const [sidebarOpen, setSidebarOpen] = useState(false);
-//   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
-
-//   return (
-//     <div className="flex w-full min-h-screen">
-//       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-//       <div className="flex-1">
-//         <Navbar toggleSidebar={toggleSidebar} />
-//         <main className="pt-16 px-6 pb-12 max-w-screen-xl mx-auto">
-//           <div className="space-y-6">
-//             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//               <LeadCard
-//                 name="Soham Shriram"
-//                 designation="HR"
-//                 company="Tilikor Groups"
-//                 dateAdded="27/01/2024 at 5:00 PM"
-//                 imageUrl={Soham}
-//               />
-//               <LeadDescription
-//                 description="A comprehensive CRM management system to streamline customer 
-//                 interactions, track leads, and enhance relationship management and creating a 
-//                 best platform for Customers."
-//               />
-//             </div>
-//             <ContactsTable />
-//             <CustomizePhases />
-//             <Discussion />
-//           </div>
-//         </main>
-//         <Footer />
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default PersonalLeadPage;
-
-
-// import React, { useState } from 'react';
-// import Navbar from '../components/Navbar';
-// import Sidebar from '../components/Sidebar';
-// import LeadCard from '../components/LeadCard';
-// import LeadDescription from '../components/LeadDescription';
-// import ContactsTable from '../components/ContactsTable';
-// import CustomizePhases from '../components/CustomizePhases';
-// import Discussion from '../components/Discussion';
-// import Footer from '../components/Footer';
-// import Soham from '../assets/Soham.png';
-
-// function PersonalLeadPage() {
-//   const [sidebarOpen, setSidebarOpen] = useState(false);
-//   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
-
-//   return (
-//     <div className="flex w-full min-h-screen">
-//       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-//       <div className="flex-1">
-//         <Navbar toggleSidebar={toggleSidebar} />
-//         <main className="pt-16 px-4 md:px-6 pb-12 max-w-screen-xl mx-auto">
-//           <div className="space-y-6">
-//             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-//               <LeadCard
-//                 name="Soham Shriram"
-//                 designation="HR"
-//                 company="Tilikor Groups"
-//                 dateAdded="27/01/2024 at 5:00 PM"
-//                 imageUrl={Soham}
-//               />
-//               <LeadDescription
-//                 description="A comprehensive CRM management system to streamline customer 
-//                 interactions, track leads, and enhance relationship management."
-//               />
-//             </div>
-//             <ContactsTable />
-//             <CustomizePhases />
-//             <Discussion />
-//           </div>
-//         </main>
-//         <Footer />
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default PersonalLeadPage;
-
+// src/pages/PersonalLeadPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import LeadCard from '../components/LeadCard';
-import LeadDescription from '../components/LeadDescription';
-import ContactsTable from '../components/ContactsTable';
-import CustomizePhases from '../components/CustomizePhases';
-import Discussion from '../components/Discussion';
+import { useParams }        from 'react-router-dom';
+import axios                from 'axios';
+import Sidebar              from '../components/Sidebar';
+import Navbar               from '../components/Navbar';
+import Footer               from '../components/Footer';
+import LeadCard             from '../components/LeadCard';
+import LeadDescription      from '../components/LeadDescription';
+import ContactsTable        from '../components/ContactsTable';
+import CustomizePhases      from '../components/CustomizePhases';
+import CommentSection       from '../components/CommentSection';
 
-const PersonalLeadPage = () => {
-  const { id } = useParams(); // Get lead ID from URL
-  const [lead, setLead] = useState(null);
+export default function PersonalLeadPage() {
+  const { id } = useParams();
+  const [lead, setLead]         = useState(null);
+  const [phases, setPhases]     = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState('');
 
   useEffect(() => {
-    const fetchLead = async () => {
+    if (!id) return;
+    (async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/leads/${id}`, {
-          withCredentials: true,
+        setLoading(true);
+        const { data } = await axios.get(
+          `http://localhost:3000/api/leads/${id}`,
+          { withCredentials: true }
+        );
+        if (!data.success) throw new Error(data.message);
+
+        const L = data.data;
+        // pull out your phases & contacts from the lead document
+        setLead({
+          id:          L._id,
+          name:        L.name,
+          designation: L.role,
+          company:     L.company?.name,
+          dateAdded:   new Date(L.leadAddedDate).toLocaleString(),
+          imageUrl:    L.profilePicture || 'https://via.placeholder.com/64',
+          description: L.description,
+          contacts:    L.contacts,      // use the embedded contacts array
         });
-        if (response.data.success) {
-          const leadData = response.data.data;
-          setLead({
-            name: leadData.name,
-            designation: leadData.role || 'N/A', // Adjust based on backend schema
-            company: leadData.company?.name || 'N/A',
-            dateAdded: new Date(leadData.leadAddedDate).toLocaleString(),
-            imageUrl: leadData.profilePicture || 'https://via.placeholder.com/64',
-            description: leadData.description || 'No description available.',
-            contacts: leadData.companyMembers || [],
-            phases: leadData.company.phases.map((p) => ({
-              id: p._id || Math.random(), // Use backend ID if available, otherwise temp
-              name: p.name,
-              date: p.date,
-              status: p.date && new Date(p.date) <= new Date() ? 'completed' : 'pending',
-            })),
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching lead:', error);
-        alert('Failed to fetch lead details.');
+        // build the phases array for CustomizePhases
+        setPhases(
+          (L.phases || []).map(p => ({
+            id:     p._id,
+            name:   p.name,
+            date:   p.date ? new Date(p.date).toLocaleDateString() : '',
+            status: p.date && new Date(p.date) <= new Date() ? 'completed' : 'pending'
+          }))
+        );
+      } catch (e) {
+        console.error(e);
+        setError(e.message || 'Failed to fetch lead');
+      } finally {
+        setLoading(false);
       }
-    };
-    fetchLead();
+    })();
   }, [id]);
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  if (!lead) return <div>Loading...</div>;
+  if (loading) return <div className="p-6 text-center">Loading...</div>;
+  if (error)   return <div className="p-6 text-red-600">{error}</div>;
+  if (!lead)  return <div className="p-6">No lead found.</div>;
 
   return (
     <div className="flex h-screen">
-      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+      <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen(o => !o)} />
       <div className="flex-1 flex flex-col">
-        <Navbar toggleSidebar={toggleSidebar} />
-        <main className="flex-1 p-6 bg-gray-100 overflow-y-auto">
+        <Navbar toggleSidebar={() => setSidebarOpen(o => !o)} />
+        <main className="flex-1 overflow-y-auto bg-gray-100 p-6">
           <div className="max-w-4xl mx-auto space-y-6">
             <LeadCard
               name={lead.name}
@@ -166,16 +78,19 @@ const PersonalLeadPage = () => {
               dateAdded={lead.dateAdded}
               imageUrl={lead.imageUrl}
             />
+
             <LeadDescription description={lead.description} />
+
             <ContactsTable contacts={lead.contacts} />
-            <CustomizePhases phases={lead.phases} setPhases={() => {}} /> {/* setPhases is a placeholder */}
-            <Discussion />
+
+            <CustomizePhases phases={phases} setPhases={setPhases} />
+
+            {/* now the discussion will always render */}
+            <CommentSection leadId={id} />
           </div>
         </main>
         <Footer />
       </div>
     </div>
   );
-};
-
-export default PersonalLeadPage;
+}

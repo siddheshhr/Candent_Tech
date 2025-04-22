@@ -4,10 +4,12 @@ const mongoose = require("mongoose");
 // const cors = require("cors");
 const authRoutes = require("./routes/auth_route.js");
 const userRoutes = require("./routes/user_route.js");
+
 const cookieParser = require("cookie-parser");
 // const cookieParser = require('cookie-parser');
 // index.js (already in your code)
 const leadRoutes = require("./routes/lead_routes.js");
+const commentRoutes = require('./routes/comment_route.js');
 
 const app = express();
 const PORT = 3000;
@@ -35,6 +37,7 @@ app.use(cookieParser()); // for handling cookies
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/api/leads", leadRoutes); // Mounts the lead routes at /api/leads
+app.use('/api/comments', commentRoutes);
 
 // Test route
 app.get("/test", (req, res) => {
