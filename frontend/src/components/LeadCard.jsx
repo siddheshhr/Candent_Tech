@@ -26,7 +26,7 @@ import React from 'react';
 
 const LeadCard = ({ name, designation, company, dateAdded, imageUrl }) => {
   return (
-    <div className="w-full bg-white rounded-lg shadow-md p-6 flex items-start space-x-4">
+    <div className="w-[450px] mr-[40px] bg-white rounded-lg shadow-md p-6 flex items-start space-x-4">
       <img
         src={imageUrl || 'https://via.placeholder.com/64'} // Fallback image
         alt={name}
