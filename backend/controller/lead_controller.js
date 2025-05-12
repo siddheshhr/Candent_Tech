@@ -1,42 +1,53 @@
-const LeadInfo = require('../models/Lead.model');
+
+const Lead = require('../models/LeadInfo.model');
 const Company = require('../models/Company.model');
 const CompanyMember = require('../models/CompanyMembers.model');
 const Phase = require('../models/Phase.model');
 const mongoose = require('mongoose');
 
-// Add a new lead
-exports.addLead = async (req, res) => {
+// GET all leads
+exports.getAllLeads = async (req, res, next) => {
+  try {
+    const leads = await Lead.find().populate('company');
+    res.status(200).json({ success: true, data: leads });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// GET one lead by ID
+exports.getLeadById = async (req, res) => {
+  try {
+    const leadId = req.params.id;
+    const lead = await Lead.findById(leadId).populate('company');
+    if (!lead) {
+      return res.status(404).json({ success: false, message: 'Lead not found' });
+    }
+    return res.status(200).json({ success: true, data: lead });
+  } catch (error) {
+    console.error('Error fetching lead by ID:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while fetching lead details',
+      error: error.message,
+    });
+  }
+};
+
+// POST create new lead
+exports.createLead = async (req, res, next) => {
   try {
     const {
-      profilePicture,
-      name,
-      role,
-      contact,
-      email,
-      personalEmail,
-      description,
-      birthdate,
-      leadAddedDate,
-      companyName,
-      companyDomain,
-      companyAddress,
-      companyContact,
-      companyCity,
-      companyState,
+      profilePicture, name, role, contact,
+      email, personalEmail, description,
+      birthdate, leadAddedDate,
+      companyName, companyDomain, companyAddress,
+      companyContact, companyCity, companyState,
       companyCountry,
-      companyMembers,
-      phases,
+      companyMembers = [], phases = []
     } = req.body;
 
-    // Validate required fields
-    if (!name || !role || !contact || !email || !personalEmail || !description || !birthdate || !companyName || !companyDomain || !companyAddress || !companyContact || !companyCity || !companyState || !companyCountry) {
-      return res.status(400).json({
-        success: false,
-        message: 'All required fields must be provided',
-      });
-    }
-
-    // Create and save company
+    // 1) Create Company
     const company = new Company({
       name: companyName,
       domain: companyDomain,
@@ -45,39 +56,13 @@ exports.addLead = async (req, res) => {
       city: companyCity,
       state: companyState,
       country: companyCountry,
+      members: [],
+      phases: []
     });
     await company.save();
 
-    // Create and save company members
-    const memberPromises = companyMembers.map(member => {
-      const companyMember = new CompanyMember({
-        role: member.role,
-        name: member.name,
-        email: member.email,
-        contact: member.contact,
-        company: company._id,
-      });
-      return companyMember.save();
-    });
-    const savedMembers = await Promise.all(memberPromises);
-    company.members = savedMembers.map(member => member._id);
-
-    // Create and save phases
-    const phasePromises = phases.map(phase => {
-      const newPhase = new Phase({
-        name: phase.name,
-        date: phase.date,
-        company: company._id,
-      });
-      return newPhase.save();
-    });
-    const savedPhases = await Promise.all(phasePromises);
-    company.phases = savedPhases.map(phase => phase._id);
-
-    await company.save();
-
-    // Create and save lead
-    const leadInfo = new LeadInfo({
+    // 2) Create LeadInfo with embedded contacts + phases
+    const lead = new Lead({
       profilePicture,
       name,
       role,
@@ -85,216 +70,94 @@ exports.addLead = async (req, res) => {
       email,
       personalEmail,
       description,
-      birthdate,
-      leadAddedDate: leadAddedDate || Date.now(),
+      birthdate: new Date(birthdate),
+      leadAddedDate: leadAddedDate ? new Date(leadAddedDate) : Date.now(),
       company: company._id,
+      contacts: companyMembers.map(m => ({
+        name: m.name,
+        email: m.email,
+        contact: m.contact,
+        designation: m.role
+      })),
+      phases: phases.map(p => ({
+        name: p.name,
+        date: new Date(p.date),
+        status: p.status || 'Pending' // Allow custom status or default to 'Pending'
+      })),
+      discussions: []
     });
-    await leadInfo.save();
-
-    // Populate the response data
-    const populatedLead = await LeadInfo.findById(leadInfo._id).populate({
-      path: 'company',
-      populate: [
-        { path: 'members' },
-        { path: 'phases' },
-      ],
-    });
-
-    res.status(201).json({
-      success: true,
-      message: 'Lead created successfully',
-      data: populatedLead,
-    });
-  } catch (error) {
-    console.error('[BACKEND] Error creating lead:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Error creating lead',
-      error: error.message,
-    });
-  }
-};
-
-// Get all leads
-exports.getAllLeads = async (req, res) => {
-  try {
-    const leads = await LeadInfo.find().populate({
-      path: 'company',
-      populate: [
-        { path: 'members' },
-        { path: 'phases' },
-      ],
-    });
-
-    if (!leads || leads.length === 0) {
-      return res.status(200).json({
-        success: true,
-        message: 'No leads found',
-        data: [],
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Leads retrieved successfully',
-      data: leads,
-    });
-  } catch (error) {
-    console.error('[BACKEND] Error fetching leads:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching leads',
-      error: error.message,
-    });
-  }
-};
-
-// Delete a lead by ID
-exports.deleteLead = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Validate ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid lead ID format',
-      });
-    }
-
-    // Find the lead
-    const lead = await LeadInfo.findById(id);
-    if (!lead) {
-      return res.status(404).json({
-        success: false,
-        message: 'Lead not found',
-      });
-    }
-
-    // Delete associated company and its members/phases
-    const company = await Company.findById(lead.company);
-    if (company) {
-      console.log('[BACKEND] Deleting members for company:', company._id);
-      await CompanyMember.deleteMany({ company: company._id });
-      console.log('[BACKEND] Deleting phases for company:', company._id);
-      await Phase.deleteMany({ company: company._id });
-      console.log('[BACKEND] Deleting company:', company._id);
-      await company.deleteOne();
-    } else {
-      console.log('[BACKEND] No company found for lead:', lead._id);
-    }
-
-    // Delete the lead
-    console.log('[BACKEND] Deleting lead:', lead._id);
-    await lead.deleteOne();
-
-    res.status(200).json({
-      success: true,
-      message: 'Lead and associated data deleted successfully',
-    });
-  } catch (error) {
-    console.error('[BACKEND] Error deleting lead:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Error deleting lead',
-      error: error.message,
-    });
-  }
-};
-
-// Optional: Add these if you plan to implement View Details or Edit functionality
-/*
-exports.getLeadById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid lead ID format',
-      });
-    }
-
-    const lead = await LeadInfo.findById(id).populate({
-      path: 'company',
-      populate: [
-        { path: 'members' },
-        { path: 'phases' },
-      ],
-    });
-
-    if (!lead) {
-      return res.status(404).json({
-        success: false,
-        message: 'Lead not found',
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Lead retrieved successfully',
-      data: lead,
-    });
-  } catch (error) {
-    console.error('[BACKEND] Error fetching lead:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching lead',
-      error: error.message,
-    });
-  }
-};
-
-exports.updateLead = async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid lead ID format',
-      });
-    }
-
-    const lead = await LeadInfo.findById(id);
-    if (!lead) {
-      return res.status(404).json({
-        success: false,
-        message: 'Lead not found',
-      });
-    }
-
-    Object.assign(lead, req.body);
     await lead.save();
 
-    if (req.body.company) {
-      const company = await Company.findById(lead.company);
-      if (company) {
-        Object.assign(company, req.body.company);
-        await company.save();
-      }
-    }
-
-    const updatedLead = await LeadInfo.findById(id).populate({
-      path: 'company',
-      populate: [
-        { path: 'members' },
-        { path: 'phases' },
-      ],
-    });
-
-    res.status(200).json({
-      success: true,
-      message: 'Lead updated successfully',
-      data: updatedLead,
-    });
-  } catch (error) {
-    console.error('[BACKEND] Error updating lead:', error.message);
-    res.status(500).json({
-      success: false,
-      message: 'Error updating lead',
-      error: error.message,
-    });
+    // 3) Return populated
+    const populated = await Lead.findById(lead._id).populate('company');
+    res.status(201).json({ success: true, data: populated });
+  } catch (err) {
+    next(err);
   }
 };
-*/
 
-module.exports = exports;
+// PUT update lead
+exports.updateLead = async (req, res, next) => {
+  try {
+    const updated = await Lead.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updated) return res.status(404).json({ success: false, message: 'Lead not found' });
+    res.status(200).json({ success: true, data: updated });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// DELETE lead
+exports.deleteLead = async (req, res, next) => {
+  try {
+    const lead = await Lead.findByIdAndDelete(req.params.id);
+    if (!lead) {
+      return res.status(404).json({ success: false, message: 'Lead not found' });
+    }
+    res.status(200).json({ success: true, message: 'Lead deleted' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/** 
+ * GET /api/dashboard/stats
+ * Returns totalLeads, totalCompanies, leadsPerMonth, recentLeads
+ */
+exports.getStats = async (req, res, next) => {
+  try {
+    // 1) total counts
+    const totalLeads = await Lead.countDocuments();
+    const totalCompanies = await Company.countDocuments();
+
+    // 2) group leads by year-month
+    const leadsPerMonth = await Lead.aggregate([
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m", date: "$leadAddedDate" } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]).exec();
+
+    // 3) fetch 5 most‐recent leads
+    const recentLeads = await Lead
+      .find({})
+      .sort({ leadAddedDate: -1 })
+      .limit(5)
+      .select("name company leadAddedDate")
+      .populate("company", "name")
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      totalLeads,
+      totalCompanies,
+      leadsPerMonth: leadsPerMonth.map(d => ({ month: d._id, count: d.count })),
+      recentLeads
+    });
+  } catch (err) {
+    next(err);
+  }
+};

@@ -69,13 +69,13 @@ const handleLogout = () => {
 
         {/* Menu Items */}
         <nav className="flex flex-col space-y-2">
-          <Link to="/dashboard">
+          <Link to="/">
             <SidebarItem icon={<Home size={20} />} label="Home" isOpen={isOpen} />
           </Link>
           <Link to="/leads">
             <SidebarItem icon={<Users size={20} />} label="Leads" isOpen={isOpen} />
           </Link>
-          <Link to="/">
+          <Link to="/opportunities">
             <SidebarItem icon={<Briefcase size={20} />} label="Dashboard" isOpen={isOpen} />
           </Link>
           <SidebarItem icon={<Clock size={20} />} label="Opportunity" isOpen={isOpen} />

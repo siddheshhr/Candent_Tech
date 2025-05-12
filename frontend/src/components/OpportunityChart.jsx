@@ -1,91 +1,70 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+// src/components/OpportunityChart.jsx
+import React from 'react';
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from 'recharts';
 
-export default function OpportunityChart() {
-  const [hoveredBar, setHoveredBar] = useState(null);
-  
-  const data = [
-    { month: 'JAN', value: 92, color: '#60A5FA' },  // Blue
-    { month: 'FEB', value: 98, color: '#A7F3D0' },  // Green
-    { month: 'MARCH', value: 68, color: '#FDA4AF' }, // Pink
-    { month: 'APRIL', value: 105, color: '#FDBA74' }, // Orange
-    { month: 'MAY', value: 59, color: '#C4B5FD' }    // Purple
-  ];
-  
+export default function OpportunityChart({ data }) {  
   return (
-    <motion.div
-      className="bg-white p-6 rounded-xl shadow-lg w-full"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">
-        Opportunities to Leads Ratio per Month
-      </h2>
-      
-      <div className="h-80 relative flex flex-col">
-        {/* Chart grid and y-axis */}
-        <div className="flex-1 flex flex-col justify-between">
-          {[120, 100, 80, 60, 40, 20, 0].map((tick) => (
-            <div key={tick} className="flex items-center relative">
-              <span className="text-xs text-gray-500 w-8 text-right mr-2">{tick}%</span>
-              <div className="h-px bg-gray-200 flex-1"></div>
-            </div>
-          ))}
-        </div>
-        
-        {/* Bars container - positioned absolutely */}
-        <div className="absolute inset-y-0 right-0 left-10 flex items-end justify-around pt-5 pb-6">
-          {data.map((item, index) => (
-            <div 
-              key={index}
-              className="flex flex-col items-center justify-end h-full"
-              style={{ width: '18%' }}
-              onMouseEnter={() => setHoveredBar(index)}
-              onMouseLeave={() => setHoveredBar(null)}
-            >
-              {/* Bar */}
-              <motion.div
-                className="w-full rounded-t-md relative"
-                style={{ 
-                  backgroundColor: item.color,
-                  height: `${(item.value / 120) * 100}%`
-                }}
-                initial={{ height: 0 }}
-                animate={{ 
-                  height: `${(item.value / 120) * 100}%`,
-                  scale: hoveredBar === index ? 1.05 : 1
-                }}
-                transition={{ 
-                  height: { duration: 0.8, delay: index * 0.1 },
-                  scale: { duration: 0.2 }
-                }}
-              >
-                {/* Value label */}
-                <div className="absolute -top-6 left-0 right-0 text-center font-medium text-sm">
-                  {item.value}%
-                </div>
-                
-                {/* Tooltip on hover */}
-                {hoveredBar === index && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-xs"
-                  >
-                    {item.value}%
-                  </motion.div>
-                )}
-              </motion.div>
-              
-              {/* Month label */}
-              <div className="mt-2 text-sm font-medium" style={{ color: hoveredBar === index ? item.color : '#6B7280' }}>
-                {item.month}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </motion.div>
+    <div className="bg-white rounded-2xl shadow-lg p-6">
+      {/* <h2 className="text-xl font-semibold text-gray-700 mb-4">
+        Leads per Month
+      </h2> */}
+      <ResponsiveContainer width="100%" height={280}>
+        <BarChart
+          data={data}
+          margin={{ top: 16, right: 16, left: 0, bottom: 0 }}
+        >
+          {/* define the gradient */}
+          <defs>
+            <linearGradient id="leadGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#00B4D8" stopOpacity={0.9} />
+              <stop offset="100%" stopColor="#0077B6" stopOpacity={0.9} />
+            </linearGradient>
+          </defs>
+
+          {/* very light grid */}
+          <CartesianGrid stroke="#F3F4F6" strokeDasharray="3 3" />
+
+          <XAxis
+            dataKey="month"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: '#6B7280', fontSize: 12 }}
+          />
+
+          <YAxis
+            allowDecimals={false}
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: '#6B7280', fontSize: 12 }}
+          />
+
+          <Tooltip
+            contentStyle={{
+              borderRadius: 8,
+              border: 'none',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            }}
+            formatter={(value) => [`${value}`, 'Leads']}
+            labelFormatter={(label) => `Month: ${label}`}
+          />
+
+          <Bar
+            dataKey="count"
+            name="Leads"
+            fill="url(#leadGradient)"
+            radius={[6, 6, 0, 0]}
+            barSize={18}
+          />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }

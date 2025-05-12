@@ -1,364 +1,773 @@
-import React, { useState } from 'react';
+// // src/pages/Dashboard.jsx
+// import React, { useState, useEffect } from 'react';
+// import axios from 'axios';
+// import { motion } from 'framer-motion';
+// import jsPDF from 'jspdf';
+// import Sidebar from '../components/Sidebar';
+// import Navbar  from '../components/Navbar';
+// import Footer  from '../components/Footer';
+// import StatsCard        from '../components/StatsCard';
+// import OpportunityChart from '../components/OpportunityChart';
+// import ProgressItem     from '../components/ProgressItem';
+// import { PieChart, Briefcase, Percent, Users, Download } from 'lucide-react';
+
+// const containerVariants = {
+//   hidden: { opacity: 0 },
+//   visible: {
+//     opacity: 1,
+//     transition: { staggerChildren: 0.2, delayChildren: 0.3 },
+//   },
+// };
+// const itemVariants = {
+//   hidden: { y: 20, opacity: 0 },
+//   visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 120 } },
+// };
+
+// export default function Dashboard() {
+//   const [sidebarOpen, setSidebarOpen] = useState(false);
+//   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
+//   const [stats, setStats] = useState({
+//     totalLeads: 0,
+//     totalCompanies: 0,
+//     totalOpportunities: 0,
+//     leadsPerMonth: [],    // [{ month: '2025-04', count: 5 }, …]
+//     recentLeads: []       // [{ name, company: {name}, leadAddedDate }, …]
+//   });
+
+//   useEffect(() => {
+//     axios.get('http://localhost:3000/api/leads/stats')
+//       .then(res => {
+//         if (res.data.success) {
+//           setStats({
+//             totalLeads: res.data.totalLeads,
+//             totalCompanies: res.data.totalCompanies,
+//             totalOpportunities: res.data.totalOpportunities || 0,
+//             leadsPerMonth: res.data.leadsPerMonth,
+//             recentLeads: res.data.recentLeads
+//           });
+//         }
+//       })
+//       .catch(console.error);
+//   }, []);
+
+//   // Conversion rate = opportunities ÷ leads
+//   const conversionRate = stats.totalLeads > 0
+//     ? Math.round((stats.totalOpportunities / stats.totalLeads) * 100)
+//     : 0;
+
+//   // PDF export
+//   const handleExport = () => {
+//     const doc = new jsPDF();
+//     let y = 20;
+//     doc.setFontSize(18);
+//     doc.text('Dashboard Report', 14, y); y += 10;
+//     doc.setFontSize(12);
+//     doc.text(`Total Leads: ${stats.totalLeads}`, 14, y); y += 8;
+//     doc.text(`Total Companies: ${stats.totalCompanies}`, 14, y); y += 8;
+//     doc.text(`Total Opportunities: ${stats.totalOpportunities}`, 14, y); y += 12;
+//     doc.text('Leads per Month:', 14, y); y += 8;
+//     stats.leadsPerMonth.forEach(item => {
+//       doc.text(` • ${item.month}: ${item.count}`, 18, y);
+//       y += 6;
+//     });
+//     y += 8;
+//     doc.text('Recent Leads:', 14, y); y += 8;
+//     stats.recentLeads.forEach(l => {
+//       const date = new Date(l.leadAddedDate).toLocaleDateString();
+//       doc.text(` • ${l.name} (${l.company?.name || '—'}) on ${date}`, 18, y);
+//       y += 6;
+//     });
+//     doc.save('dashboard_report.pdf');
+//   };
+
+//   return (
+//     <div className="flex min-h-screen bg-gray-50">
+//       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar}/>
+//       <div className="flex flex-col flex-1">
+//         <Navbar toggleSidebar={toggleSidebar}/>
+
+//         <motion.div
+//           className="p-6 flex-grow"
+//           variants={containerVariants}
+//           initial="hidden"
+//           animate="visible"
+//         >
+//           {/* Header */}
+//           <motion.div
+//             className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4"
+//             variants={itemVariants}
+//           >
+//             <div>
+//               <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome, Alice</h1>
+//               <p className="text-gray-500 text-lg">Here's your dashboard overview</p>
+//             </div>
+//             <motion.button
+//               onClick={handleExport}
+//               whileHover={{ scale: 1.05 }}
+//               whileTap={{ scale: 0.95 }}
+//               className="bg-[#3B9EC1] text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2"
+//             >
+//               <Download size={20}/> Export Report
+//             </motion.button>
+//           </motion.div>
+
+//           {/* Two large metric cards */}
+//           <motion.div
+//             className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
+//             variants={containerVariants}
+//           >
+//             <motion.div
+//               className="bg-white p-8 rounded-2xl shadow-xl"
+//               variants={itemVariants}
+//             >
+//               <div className="flex items-center gap-4">
+//                 <div className="p-4 bg-blue-100 rounded-xl">
+//                   <Users className="text-blue-600" size={28}/>
+//                 </div>
+//                 <div>
+//                   <h3 className="text-gray-500 text-lg">Total Leads</h3>
+//                   <p className="text-4xl font-bold text-gray-800 mt-2">
+//                     {stats.totalLeads}
+//                   </p>
+//                 </div>
+//               </div>
+//             </motion.div>
+//             <motion.div
+//               className="bg-white p-8 rounded-2xl shadow-xl"
+//               variants={itemVariants}
+//             >
+//               <div className="flex items-center gap-4">
+//                 <div className="p-4 bg-orange-100 rounded-xl">
+//                   <Briefcase className="text-orange-600" size={28}/>
+//                 </div>
+//                 <div>
+//                   <h3 className="text-gray-500 text-lg">Total Companies</h3>
+//                   <p className="text-4xl font-bold text-gray-800 mt-2">
+//                     {stats.totalCompanies}
+//                   </p>
+//                 </div>
+//               </div>
+//             </motion.div>
+//           </motion.div>
+
+//           {/* Four small stats cards */}
+//           <motion.div
+//             className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+//             variants={containerVariants}
+//           >
+//             <StatsCard
+//               icon={<PieChart size={24}/>}
+//               value={stats.totalLeads}
+//               label="Total Leads"
+//               bgColor="bg-pink-100"
+//               iconCircle="bg-pink-200"
+//               iconColor="text-pink-600"
+//             />
+//             <StatsCard
+//               icon={<Briefcase size={24}/>}
+//               value={stats.totalCompanies}
+//               label="Companies"
+//               bgColor="bg-amber-100"
+//               iconCircle="bg-amber-200"
+//               iconColor="text-amber-600"
+//             />
+//             <StatsCard
+//               icon={<Percent size={24}/>}
+//               value={`${conversionRate}%`}
+//               label="Conversion Rate"
+//               bgColor="bg-green-100"
+//               iconCircle="bg-green-200"
+//               iconColor="text-green-600"
+//             />
+//             <StatsCard
+//               icon={<Briefcase size={24}/>}
+//               value={stats.totalOpportunities}
+//               label="Opportunities"
+//               bgColor="bg-blue-100"
+//               iconCircle="bg-blue-200"
+//               iconColor="text-blue-600"
+//             />
+//           </motion.div>
+
+//           {/* Charts & Recent Leads */}
+//           <motion.div
+//             className="grid grid-cols-1 xl:grid-cols-2 gap-8"
+//             variants={containerVariants}
+//           >
+//             <motion.div className="space-y-8" variants={containerVariants}>
+//               <motion.div variants={itemVariants}>
+//                 <OpportunityChart data={stats.leadsPerMonth}/>
+//               </motion.div>
+//               <motion.div variants={itemVariants}>
+//                 <ProgressItem />
+//               </motion.div>
+//             </motion.div>
+
+//             <motion.div
+//               className="bg-white rounded-2xl shadow-xl p-6"
+//               variants={itemVariants}
+//             >
+//               <div className="flex justify-between items-center mb-6">
+//                 <h2 className="text-2xl font-bold text-gray-800">Recent Leads</h2>
+//                 <span className="text-gray-500">{stats.recentLeads.length} added</span>
+//               </div>
+//               <div className="grid grid-cols-12 border-b pb-3 mb-2 text-sm text-gray-500 uppercase">
+//                 <div className="col-span-5">Lead</div>
+//                 <div className="col-span-4">Company</div>
+//                 <div className="col-span-3">Date</div>
+//               </div>
+//               {stats.recentLeads.length > 0 ? (
+//                 stats.recentLeads.map((lead, idx) => (
+//                   <div
+//                     key={idx}
+//                     className="grid grid-cols-12 py-3 items-center border-b last:border-0"
+//                   >
+//                     <div className="col-span-5 flex items-center">
+//                       <div className="w-8 h-8 bg-gray-200 rounded-full mr-3" />
+//                       <span className="font-medium">{lead.name}</span>
+//                     </div>
+//                     <div className="col-span-4 text-gray-800">
+//                       {lead.company?.name || '—'}
+//                     </div>
+//                     <div className="col-span-3 text-gray-600">
+//                       {new Date(lead.leadAddedDate).toLocaleDateString()}
+//                     </div>
+//                   </div>
+//                 ))
+//               ) : (
+//                 <p className="text-center text-gray-500 py-4">No recent leads.</p>
+//               )}
+//             </motion.div>
+//           </motion.div>
+//         </motion.div>
+
+//         <Footer />
+//       </div>
+//     </div>
+//   );
+// }
+// src/pages/Dashboard.jsx
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { motion } from 'framer-motion';
-import Navbar from '../components/Navbar';
+import jsPDF from 'jspdf';
 import Sidebar from '../components/Sidebar';
+import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import StatsCard from '../components/StatsCard';
 import OpportunityChart from '../components/OpportunityChart';
 import ProgressItem from '../components/ProgressItem';
-import { PieChart, Briefcase, Percent, Users, Download } from 'lucide-react';
+import { PieChart, Briefcase, Percent, Users, Download, RefreshCw, Bell, Calendar, Layers } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.2,
-      delayChildren: 0.3,
-    },
+    transition: { staggerChildren: 0.2, delayChildren: 0.3 },
   },
 };
 
 const itemVariants = {
   hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { type: 'spring', stiffness: 120 },
-  },
+  visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 120 } },
 };
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [dateRange, setDateRange] = useState('month'); // 'week', 'month', 'quarter', 'year'
+  
+  const [stats, setStats] = useState({
+    totalLeads: 0,
+    totalCompanies: 0,
+    totalOpportunities: 0,
+    leadsPerMonth: [],    // [{ month: '2025-04', count: 5 }, …]
+    recentLeads: [],      // [{ name, company: {name}, leadAddedDate }, …]
+    leadsByStage: [],     // [{ stage: 'Initial Contact', count: 10 }, ...]
+    upcomingTasks: []     // [{ title, dueDate, priority }, ...]
+  });
 
-  const recentProjects = [
-    {
-      icon: 'chakra',
-      name: 'Chakra Soft UI Version',
-      progress: 60,
-      budget: '$14,000',
-      color: 'purple',
-    },
-    {
-      icon: 'progress',
-      name: 'Add Progress Track',
-      progress: 10,
-      budget: '$3,000',
-      color: 'blue',
-    },
-    {
-      icon: 'platform',
-      name: 'Fix Platform Errors',
-      progress: 100,
-      budget: 'Not set',
-      color: 'green',
-    },
-    {
-      icon: 'mobile',
-      name: 'Launch our Mobile App',
-      progress: 100,
-      budget: '$32,000',
-      color: 'green',
-    },
-    {
-      icon: 'pricing',
-      name: 'Add the New Pricing Page',
-      progress: 25,
-      budget: '$400',
-      color: 'blue',
-    },
-    {
-      icon: 'shop',
-      name: 'Redesign New Online Shop',
-      progress: 40,
-      budget: '$7,600',
-      color: 'red',
-    },
-  ];
+  // Get current user info
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const res = await axios.get('http://localhost:3000/api/user/current', { withCredentials: true });
+        if (res.data.success) {
+          setUserName(res.data.user.firstName || res.data.user.name || 'User');
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+      }
+    };
+    
+    fetchUserInfo();
+  }, []);
 
-  // Render the icon based on the project type
-  const renderIcon = (iconType) => {
-    switch (iconType) {
-      case 'chakra':
-        return (
-          <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center text-white">
-            Ch
-          </div>
-        );
-      case 'progress':
-        return (
-          <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center text-white">
-            ▲
-          </div>
-        );
-      case 'platform':
-        return (
-          <div className="w-8 h-8 bg-green-500 rounded flex items-center justify-center text-white">
-            +
-          </div>
-        );
-      case 'mobile':
-        return (
-          <div className="w-8 h-8 bg-green-500 rounded flex items-center justify-center text-white">
-            ◯
-          </div>
-        );
-      case 'pricing':
-        return (
-          <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center text-white">
-            ◆
-          </div>
-        );
-      case 'shop':
-        return (
-          <div className="w-8 h-8 bg-red-500 rounded flex items-center justify-center text-white">
-            In
-          </div>
-        );
-      default:
-        return (
-          <div className="w-8 h-8 bg-gray-500 rounded flex items-center justify-center text-white">
-            ?
-          </div>
-        );
+  // Fetch dashboard data
+  const fetchDashboardData = async (range = dateRange) => {
+    setIsLoading(true);
+    try {
+      const res = await axios.get(`http://localhost:3000/api/leads/stats?range=${range}`, 
+        { withCredentials: true }
+      );
+      
+      if (res.data.success) {
+        setStats({
+          totalLeads: res.data.totalLeads,
+          totalCompanies: res.data.totalCompanies,
+          totalOpportunities: res.data.totalOpportunities || 0,
+          leadsPerMonth: res.data.leadsPerMonth,
+          recentLeads: res.data.recentLeads,
+          leadsByStage: res.data.leadsByStage || [],
+          upcomingTasks: res.data.upcomingTasks || []
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  // Initial data loading
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchDashboardData();
+    setRefreshing(false);
+  };
+
+  const handleDateRangeChange = (range) => {
+    setDateRange(range);
+    fetchDashboardData(range);
+  };
+
+  // Conversion rate = opportunities ÷ leads
+  const conversionRate = stats.totalLeads > 0
+    ? Math.round((stats.totalOpportunities / stats.totalLeads) * 100)
+    : 0;
+
+  // Calculate growth metrics (compare with previous period)
+  const leadGrowth = stats.previousPeriodLeads 
+    ? Math.round(((stats.totalLeads - stats.previousPeriodLeads) / stats.previousPeriodLeads) * 100)
+    : 0;
+
+  // PDF export
+  const handleExport = () => {
+    const doc = new jsPDF();
+    let y = 20;
+    
+    // Title and date
+    doc.setFontSize(18);
+    doc.text('Dashboard Report', 14, y); y += 8;
+    doc.setFontSize(10);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, y); y += 10;
+    
+    // Main metrics
+    doc.setFontSize(14);
+    doc.text('Key Metrics Summary', 14, y); y += 8;
+    doc.setFontSize(12);
+    doc.text(`Total Leads: ${stats.totalLeads}`, 14, y); y += 7;
+    doc.text(`Total Companies: ${stats.totalCompanies}`, 14, y); y += 7;
+    doc.text(`Total Opportunities: ${stats.totalOpportunities}`, 14, y); y += 7;
+    doc.text(`Conversion Rate: ${conversionRate}%`, 14, y); y += 12;
+    
+    // Leads per period
+    doc.setFontSize(14);
+    // doc.text('Lead Activity', 14, y); y += 8;
+    // doc.setFontSize(12);
+    // stats.leadsPerMonth.forEach(item => {
+    //   doc.text(` • ${item.month}: ${item.count} leads`, 18, y);
+    //   y += 7;
+    // });
+    // y += 8;
+    
+    // Lead stages
+    if (stats.leadsByStage && stats.leadsByStage.length > 0) {
+      doc.setFontSize(14);
+      doc.text('Lead Stages Distribution', 14, y); y += 8;
+      doc.setFontSize(12);
+      stats.leadsByStage.forEach(item => {
+        doc.text(` • ${item.stage}: ${item.count} leads`, 18, y);
+        y += 7;
+      });
+      y += 8;
+    }
+    
+    // Recent leads
+    doc.setFontSize(14);
+    doc.text('Recent Leads', 14, y); y += 8;
+    doc.setFontSize(12);
+    stats.recentLeads.forEach(l => {
+      const date = new Date(l.leadAddedDate).toLocaleDateString();
+      doc.text(` • ${l.name} (${l.company?.name || '—'}) on ${date}`, 18, y);
+      y += 7;
+    });
+    
+    doc.save(`dashboard_report_${new Date().toISOString().slice(0,10)}.pdf`);
+  };
+
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-
+      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar}/>
       <div className="flex flex-col flex-1">
-        <Navbar toggleSidebar={toggleSidebar} />
+        <Navbar toggleSidebar={toggleSidebar}/>
 
-        {/* Page Content */}
         <motion.div
           className="p-6 flex-grow"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          {/* Header Section */}
+          {/* Header with controls */}
           <motion.div
             className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4"
             variants={itemVariants}
           >
             <div>
               <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                Welcome, Alice
+                Welcome, {userName}
               </h1>
               <p className="text-gray-500 text-lg">
-                Here's your dashboard overview
+                {new Date().toLocaleDateString('en-US', { 
+                  weekday: 'long', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
               </p>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-[#3B9EC1] text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2"
-            >
-              <Download size={20} />
-              <span>Export Report</span>
-            </motion.button>
-          </motion.div>
-
-          {/* Main Metrics Grid (two big cards) */}
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
-            variants={containerVariants}
-          >
-            <motion.div
-              className="bg-white p-8 rounded-2xl shadow-xl"
-              variants={itemVariants}
-              whileHover={{ y: -5 }}
-            >
-              <div className="flex items-center gap-4">
-                <div className="p-4 bg-blue-100 rounded-xl">
-                  <Users className="text-blue-600" size={28} />
-                </div>
-                <div>
-                  <h3 className="text-gray-500 text-lg">Total Leads</h3>
-                  <p className="text-4xl font-bold text-gray-800 mt-2">
-                    5
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 flex items-center text-green-500 gap-2">
-                <span className="bg-green-100 px-2 py-1 rounded-md text-sm">
-                  ↑ 12%
-                </span>
-                <span className="text-sm">vs last month</span>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="bg-white p-8 rounded-2xl shadow-xl"
-              variants={itemVariants}
-              whileHover={{ y: -5 }}
-            >
-              <div className="flex items-center gap-4">
-                <div className="p-4 bg-orange-100 rounded-xl">
-                  <Briefcase className="text-orange-600" size={28} />
-                </div>
-                <div>
-                  <h3 className="text-gray-500 text-lg">Total Opportunities</h3>
-                  <p className="text-4xl font-bold text-gray-800 mt-2">0</p>
-                </div>
-              </div>
-              <div className="mt-4 flex items-center text-green-500 gap-2">
-                <span className="bg-green-100 px-2 py-1 rounded-md text-sm">
-                  ↑ 8%
-                </span>
-                <span className="text-sm">vs last month</span>
-              </div>
-            </motion.div>
-          </motion.div>
-
-          {/* 4 PASTEL STAT CARDS (like the screenshot) */}
-          <motion.div
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
-            variants={containerVariants}
-          >
-            {/* Pink card */}
-            <StatsCard
-              icon={<PieChart size={24} />}
-              value="5"
-              label="Total Leads"
-              bgColor="bg-pink-100"
-              iconCircle="bg-pink-200"
-              iconColor="text-pink-600"
-            />
-
-            {/* Cream card */}
-            <StatsCard
-              icon={<Briefcase size={24} />}
-              value="0"
-              label="Total Opportunity"
-              bgColor="bg-amber-100"
-              iconCircle="bg-amber-200"
-              iconColor="text-amber-600"
-            />
-
-            {/* Green card */}
-            <StatsCard
-              icon={<Percent size={24} />}
-              value="0%"
-              label="Conversion Rate"
-              bgColor="bg-green-100"
-              iconCircle="bg-green-200"
-              iconColor="text-green-600"
-            />
-
-            {/* Purple card */}
-            <StatsCard
-              icon={<Users size={24} />}
-              value="4  "
-              label="Total Users"
-              bgColor="bg-purple-100"
-              iconCircle="bg-purple-200"
-              iconColor="text-purple-600"
-            />
-          </motion.div>
-
-          {/* Charts & Recent Projects */}
-          <motion.div
-            className="grid grid-cols-1 xl:grid-cols-2 gap-8"
-            variants={containerVariants}
-          >
-            {/* Left Column: Charts */}
-            <motion.div className="space-y-8" variants={containerVariants}>
-              <motion.div variants={itemVariants}>
-                <OpportunityChart />
-              </motion.div>
-              <motion.div variants={itemVariants}>
-                <ProgressItem />
-              </motion.div>
-            </motion.div>
-
-            {/* Right Column: Project Tracking */}
-            <motion.div
-              className="bg-white rounded-2xl shadow-xl p-6"
-              variants={itemVariants}
-              whileHover={{ scale: 1.01 }}
-            >
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    Recent Projects
-                  </h2>
-                  <div className="flex items-center mt-1">
-                    <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center text-white text-xs">
-                      ✓
-                    </div>
-                    <span className="text-sm text-gray-500 ml-2">
-                      30 done this month
-                    </span>
-                  </div>
-                </div>
-                <button className="text-gray-400">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+            
+            <div className="flex flex-wrap gap-3">
+              {/* Date range selector */}
+              <div className="bg-white rounded-xl shadow-sm border p-1 flex">
+                {['week', 'month', 'quarter', 'year'].map((range) => (
+                  <button
+                    key={range}
+                    onClick={() => handleDateRangeChange(range)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      dateRange === range 
+                        ? 'bg-[#3B9EC1] text-white' 
+                        : 'text-gray-500 hover:bg-gray-100'
+                    }`}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 
-                         1 1 0 010 2zm0 7a1 1 0 110-2 
-                         1 1 0 010 2zm0 7a1 1 0 110-2 
-                         1 1 0 010 2z"
-                    />
-                  </svg>
-                </button>
+                    {range.charAt(0).toUpperCase() + range.slice(1)}
+                  </button>
+                ))}
               </div>
 
-              {/* Table Header */}
-              <div className="grid grid-cols-12 border-b pb-3 mb-2">
-                <div className="col-span-5 text-sm text-gray-500 font-medium uppercase">
-                  Companies
-                </div>
-                <div className="col-span-3 text-sm text-gray-500 font-medium uppercase">
-                  Budget
-                </div>
-                <div className="col-span-4 text-sm text-gray-500 font-medium uppercase">
-                  Completion
-                </div>
-              </div>
+              {/* Refresh button */}
+              <motion.button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-white text-gray-700 px-4 py-2 rounded-xl shadow-sm flex items-center gap-2 border"
+              >
+                <RefreshCw 
+                  size={18} 
+                  className={`${refreshing ? 'animate-spin' : ''}`} 
+                /> 
+                Refresh
+              </motion.button>
 
-              {/* Table Rows */}
-              {recentProjects.map((project, index) => (
-                <div
-                  key={index}
-                  className="grid grid-cols-12 py-4 items-center border-b last:border-0"
+              {/* Export button */}
+              <motion.button
+                onClick={handleExport}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-[#3B9EC1] text-white px-6 py-2 rounded-xl shadow-lg flex items-center gap-2"
+              >
+                <Download size={18}/> Export
+              </motion.button>
+            </div>
+          </motion.div>
+
+          {/* Loading state */}
+          {isLoading && (
+            <div className="w-full h-64 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3B9EC1]"></div>
+            </div>
+          )}
+
+          {!isLoading && (
+            <>
+              {/* Two large metric cards with animated counters */}
+              <motion.div
+                className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
+                variants={containerVariants}
+              >
+                <motion.div
+                  className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100"
+                  variants={itemVariants}
                 >
-                  <div className="col-span-5 flex items-center">
-                    {renderIcon(project.icon)}
-                    <span className="ml-3 font-medium">{project.name}</span>
-                  </div>
-                  <div className="col-span-3 text-gray-800">{project.budget}</div>
-                  <div className="col-span-4">
-                    <div className="flex items-center">
-                      <span
-                        className={`text-${project.color}-500 mr-2 text-sm font-medium`}
-                      >
-                        {project.progress}%
-                      </span>
-                      <div className="w-full bg-gray-200 rounded-full h-1.5">
-                        <div
-                          className={`bg-${project.color}-500 h-1.5 rounded-full`}
-                          style={{ width: `${project.progress}%` }}
-                        ></div>
-                      </div>
+                  <div className="flex items-center gap-4">
+                    <div className="p-4 bg-blue-100 rounded-xl">
+                      <Users className="text-blue-600" size={28}/>
+                    </div>
+                    <div>
+                      <h3 className="text-gray-500 text-lg">Total Leads</h3>
+                      <p className="text-4xl font-bold text-gray-800 mt-2">
+                        {stats.totalLeads}
+                        {leadGrowth !== 0 && (
+                          <span className={`text-sm ml-2 ${leadGrowth > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                            {leadGrowth > 0 ? '↑' : '↓'} {Math.abs(leadGrowth)}%
+                          </span>
+                        )}
+                      </p>
                     </div>
                   </div>
+                  <div className="mt-4 flex justify-end">
+                    <button 
+                      onClick={() => navigate('/leads')}
+                      className="text-blue-600 text-sm hover:underline"
+                    >
+                      View all leads →
+                    </button>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100"
+                  variants={itemVariants}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-4 bg-orange-100 rounded-xl">
+                      <Briefcase className="text-orange-600" size={28}/>
+                    </div>
+                    <div>
+                      <h3 className="text-gray-500 text-lg">Total Companies</h3>
+                      <p className="text-4xl font-bold text-gray-800 mt-2">
+                        {stats.totalCompanies}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex justify-end">
+                    <button 
+                      onClick={() => navigate('/companies')}
+                      className="text-orange-600 text-sm hover:underline"
+                    >
+                      View all companies →
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+
+              {/* Four small stats cards */}
+              <motion.div
+                className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+                variants={containerVariants}
+              >
+                <StatsCard
+                  icon={<PieChart size={24}/>}
+                  value={stats.totalLeads}
+                  label="Total Leads"
+                  bgColor="bg-pink-100"
+                  iconCircle="bg-pink-200"
+                  iconColor="text-pink-600"
+                />
+                <StatsCard
+                  icon={<Briefcase size={24}/>}
+                  value={stats.totalCompanies}
+                  label="Companies"
+                  bgColor="bg-amber-100"
+                  iconCircle="bg-amber-200"
+                  iconColor="text-amber-600"
+                />
+                <StatsCard
+                  icon={<Percent size={24}/>}
+                  value={`${conversionRate}%`}
+                  label="Conversion Rate"
+                  bgColor="bg-green-100"
+                  iconCircle="bg-green-200"
+                  iconColor="text-green-600"
+                />
+                <StatsCard
+                  icon={<Layers size={24}/>}
+                  value={stats.totalOpportunities}
+                  label="Opportunities"
+                  bgColor="bg-blue-100"
+                  iconCircle="bg-blue-200"
+                  iconColor="text-blue-600"
+                />
+              </motion.div>
+
+              {/* Charts & Recent Leads */}
+              <motion.div
+                className="grid grid-cols-1 xl:grid-cols-2 gap-8"
+                variants={containerVariants}
+              >
+                <motion.div className="space-y-8" variants={containerVariants}>
+                  {/* Lead trend chart */}
+                  <motion.div 
+                    variants={itemVariants}
+                    className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100"
+                  >
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Lead Activity</h2>
+                    <div className="h-80">
+                      <OpportunityChart 
+                        data={stats.leadsPerMonth} 
+                        timeRange={dateRange}
+                      />
+                    </div>
+                  </motion.div>
+                  
+                  {/* Upcoming tasks card */}
+                  <motion.div 
+                    variants={itemVariants}
+                    className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100"
+                  >
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-2xl font-bold text-gray-800">Upcoming Tasks</h2>
+                      <button 
+                        onClick={() => navigate('/tasks')}
+                        className="text-blue-600 text-sm hover:underline"
+                      >
+                        View all →
+                      </button>
+                    </div>
+                    
+                    {stats.upcomingTasks && stats.upcomingTasks.length > 0 ? (
+                      <div className="space-y-4">
+                        {stats.upcomingTasks.slice(0, 3).map((task, idx) => (
+                          <div 
+                            key={idx} 
+                            className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                          >
+                            <div className={`w-2 h-10 rounded-full mr-4 ${
+                              task.priority === 'high' ? 'bg-red-500' :
+                              task.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                            }`}/>
+                            <div className="flex-1">
+                              <h4 className="font-medium">{task.title}</h4>
+                              <p className="text-sm text-gray-500">
+                                {new Date(task.dueDate).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Calendar size={16} className="text-gray-400" />
+                              <span className="text-sm text-gray-500">
+                                {new Date(task.dueDate).toLocaleDateString(undefined, {
+                                  month: 'short',
+                                  day: 'numeric'
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-center text-gray-500 py-4">No upcoming tasks.</p>
+                    )}
+                  </motion.div>
+                </motion.div>
+
+                <motion.div className="space-y-8" variants={containerVariants}>
+                  {/* Stage distribution chart */}
+                  {/* <motion.div 
+                    variants={itemVariants}
+                    className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100"
+                  > */}
+                    {/* <h2 className="text-2xl font-bold text-gray-800 mb-4">Lead Pipeline</h2> */}
+                    <ProgressItem data={stats.leadsByStage} />
+                  {/* </motion.div> */}
+                
+                  {/* Recent leads */}
+                  <motion.div
+                    className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100"
+                    variants={itemVariants}
+                  >
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-2xl font-bold text-gray-800">Recent Leads</h2>
+                      <button 
+                        onClick={() => navigate('/leads')}
+                        className="text-blue-600 text-sm hover:underline"
+                      >
+                        View all →
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-12 border-b pb-3 mb-2 text-sm text-gray-500 uppercase">
+                      <div className="col-span-5">Lead</div>
+                      <div className="col-span-4">Company</div>
+                      <div className="col-span-3">Date</div>
+                    </div>
+                    {stats.recentLeads.length > 0 ? (
+                      stats.recentLeads.map((lead, idx) => (
+                        <div
+                          key={idx}
+                          className="grid grid-cols-12 py-3 items-center border-b last:border-0 hover:bg-gray-50 transition-colors rounded-lg cursor-pointer"
+                          onClick={() => navigate(`/leads/${lead.id}`)}
+                        >
+                          <div className="col-span-5 flex items-center">
+                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mr-3 flex items-center justify-center text-white font-medium">
+                              {lead.name.charAt(0).toUpperCase()}
+                            </div>
+                            <span className="font-medium">{lead.name}</span>
+                          </div>
+                          <div className="col-span-4 text-gray-800">
+                            {lead.company?.name || '—'}
+                          </div>
+                          <div className="col-span-3 text-gray-600">
+                            {new Date(lead.leadAddedDate).toLocaleDateString()}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-center text-gray-500 py-4">No recent leads.</p>
+                    )}
+                  </motion.div>
+                </motion.div>
+              </motion.div>
+              
+              {/* Notifications panel */}
+              {/* <motion.div 
+                variants={itemVariants}
+                className="mt-8 bg-white rounded-2xl shadow-xl p-6 border border-gray-100"
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    <Bell size={20} className="text-blue-600" />
+                    Notifications
+                  </h2>
+                  <button className="text-blue-600 text-sm hover:underline">
+                    Mark all as read
+                  </button>
                 </div>
-              ))}
-            </motion.div>
-          </motion.div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {stats.notifications?.length > 0 ? (
+                    stats.notifications.slice(0, 3).map((notification, idx) => (
+                      <div key={idx} className="bg-gray-50 p-4 rounded-xl">
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
+                            {notification.icon || <Bell size={16} />}
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-gray-800">{notification.title}</h4>
+                            <p className="text-sm text-gray-500 mt-1">{notification.message}</p>
+                            <p className="text-xs text-gray-400 mt-2">{notification.time}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-span-3 text-center text-gray-500 py-4">
+                      No new notifications.
+                    </div>
+                  )}
+                </div>
+              </motion.div> */}
+            </>
+          )}
         </motion.div>
 
         <Footer />
