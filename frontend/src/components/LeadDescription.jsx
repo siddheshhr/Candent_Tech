@@ -25,13 +25,15 @@
 
 // export default LeadDescription;
 
+/////////////---------new code------------------//////////
+
 import React, { useState } from 'react';
 
 const LeadDescription = ({ description }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="bg-[#EBFAFF] rounded-lg shadow-md p-6 border border-blue-300">
+    <div className="w-[450px] ml-[40px] bg-[#ffffff] rounded-lg shadow-md p-6 border">
       <h2 className="text-lg font-semibold mb-4">Description</h2>
       <div>
         <p className={`text-gray-700 ${!isExpanded && 'line-clamp-2'}`}>
