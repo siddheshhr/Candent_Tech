@@ -1,4 +1,15 @@
-// src/pages/Dashboard.jsx
+/**
+ * Dashboard Component
+ * Main dashboard page displaying key metrics, charts, recent leads, and tasks.
+ * 
+ * Features:
+ * - Fetches and displays total leads, companies, opportunities, and conversion rate.
+ * - Shows animated metric cards and charts for lead activity and stage distribution.
+ * - Lists recent leads and upcoming tasks.
+ * - Allows exporting dashboard data as PDF.
+ * - Supports refreshing and changing date range for stats.
+ * - Responsive layout with sidebar and navbar.
+ */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';

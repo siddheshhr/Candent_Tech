@@ -1,3 +1,5 @@
+// Authentication Controller for User Signup, Signin, Google OAuth, and Password Reset
+
 const User = require("../models/User");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -5,10 +7,12 @@ const nodemailer = require("nodemailer");
 require("dotenv").config();
 const { errorHandler } = require("../utils/error");
 
+/**
+ * User Signup Controller
+ * Registers a new user with required fields. Hashes password and saves user to the database.
+ */
 const signup = async (req, res, next) => {
-  // Destructure phoneNumber instead of dateOfBirth
   const { firstName, lastName, phoneNumber, email, password } = req.body;
-
   if (!firstName || !lastName || !phoneNumber || !email || !password) {
     return next(errorHandler(400, "All fields are required!"));
   }
@@ -33,6 +37,10 @@ const signup = async (req, res, next) => {
   }
 };
 
+/**
+ * User Signin Controller
+ * Authenticates user credentials and returns JWT token.
+ */
 const signin = async (req, res, next) => {
   const { email, password } = req.body;
   
@@ -65,6 +73,10 @@ const signin = async (req, res, next) => {
   }
 };
 
+/**
+ * Google OAuth Controller
+ * Handles Google sign-in/signup and user creation if not exists.
+ */
 const google = async (req, res, next) => {
   // Include phoneNumber in case it is provided via OAuth (optional)
   const { email, name, googlePhotoUrl, phoneNumber } = req.body;
@@ -131,6 +143,10 @@ const google = async (req, res, next) => {
   }
 };
 
+/**
+ * Forgot Password Controller
+ * Sends a password reset link to the user's email.
+ */
 const forgotPassword = async (req, res, next) => {
   const { email } = req.body;
 
@@ -180,6 +196,10 @@ const forgotPassword = async (req, res, next) => {
   }
 };
 
+/**
+ * Reset Password Token Verification Controller
+ * Verifies the password reset token.
+ */
 const resetPassword = async (req, res, next) => {
   const { id, token } = req.params;
 
@@ -200,6 +220,10 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
+/**
+ * Update Password Controller
+ * Updates the user's password after verifying the reset token.
+ */
 const updatePassword = async (req, res, next) => {
   const { id, token } = req.params;
   const { password } = req.body;
@@ -224,6 +248,7 @@ const updatePassword = async (req, res, next) => {
   }
 };
 
+// Export all authentication controllers
 module.exports = {
   signup,
   signin,

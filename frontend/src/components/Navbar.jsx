@@ -6,6 +6,16 @@ import { useSelector } from 'react-redux';
 import { HiOutlinePencilAlt, HiOutlineLogout, HiOutlineLogin } from 'react-icons/hi';
 import ima from '../assets/logo.png';
 
+/**
+ * Navbar Component
+ * Displays the top navigation bar with logo, navigation links, and user profile menu.
+ *
+ * Features:
+ * - Shows logo and sidebar toggle button.
+ * - Displays navigation links (Home, Leads, Opportunities).
+ * - Shows user avatar and dropdown menu if logged in, or Sign In button if not.
+ * - Handles sign out by clearing cookies, localStorage, and sessionStorage.
+ */
 export default function Navbar({ toggleSidebar }) {
   const path = useLocation().pathname;
   const currentUser = useSelector((state) => state.user.currentUser);

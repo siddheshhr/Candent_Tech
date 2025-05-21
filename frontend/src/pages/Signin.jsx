@@ -9,13 +9,29 @@ import { signInStart, signInSucess, signInFailure } from '../redux/user/userSlic
 import ima from '../assets/gicon.png';
 import OAuth from '../components/OAuth';
 
+/**
+ * Signin Component
+ * Renders the sign-in form and handles user authentication.
+ *
+ * Features:
+ * - Validates user input for email and password.
+ * - Dispatches Redux actions for loading, success, and error states.
+ * - Shows loading spinner and error messages.
+ * - Integrates Google OAuth sign-in.
+ * - Redirects to home on successful sign-in.
+ */
+
 function Signin() {
+   // State for form data and password visibility
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
+
+   // Redux hooks for dispatching actions and accessing user state
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading, error: errorMessage } = useSelector((state) => state.user);
 
+    // Handles input changes for email and password fields
   const handleChange = (e) => {
     setFormData({ 
       ...formData, 
@@ -23,9 +39,11 @@ function Signin() {
     });
   };
 
+  // Handles form submission for sign-in
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validate required fields
     if (!formData.email || !formData.password) {
       dispatch(signInFailure("Please fill in all fields"));
       toast.error("All fields are required");
@@ -33,6 +51,7 @@ function Signin() {
     }
 
     try {
+      // Send sign-in request to backend
       dispatch(signInStart());
       const res = await fetch('http://localhost:3000/auth/signin', {
         method: 'POST',
@@ -41,10 +60,8 @@ function Signin() {
         body: JSON.stringify(formData)
       });
       
-      
-      
       const data = await res.json();
-      
+      // Handle error or success response
       if (!res.ok) {
         dispatch(signInFailure(data.message || "Signin failed"));
         toast.error(data.message || "Signin failed");
@@ -74,7 +91,8 @@ function Signin() {
               required 
             />
           </div>
-
+           {/* Password input with show/hide toggle */}
+           
           <div className="login-input-group">
             <label>Password</label>
             <div className="login-password-input">
@@ -88,11 +106,11 @@ function Signin() {
               <Eye onClick={() => setShowPassword(!showPassword)} className="login-eye-icon" size={20} />
             </div>
           </div>
-
+          {/* Forgot password link */}
           <div className="login-forgot-password">
             <Link to="/forgot-password">Forgot password?</Link>
           </div>
-
+          {/* Sign In button with loading spinner */}
           <button className="login-btn" type="submit" disabled={loading}>
             {loading ? (
               <>
@@ -109,7 +127,7 @@ function Signin() {
               {errorMessage}
             </Alert>
           )}
-
+          {/* Divider and OAuth sign-in */}
           <div className="login-divider">
             <span>Or</span>
           </div>

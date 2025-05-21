@@ -1,4 +1,28 @@
 // src/pages/LeadsPage.jsx
+/**
+ * LeadsPage Component
+ * Displays a paginated, searchable, and filterable list of leads with status tracking.
+ *
+ * Features:
+ * - Fetches leads from the backend and processes their phases/status.
+ * - Allows searching leads by name or company.
+ * - Filters leads by status (All, Not Started, In Progress, Completed, Stopped).
+ * - Supports pagination for large lead lists.
+ * - Allows downloading the current (filtered) leads as a CSV report.
+ * - Enables deleting leads with confirmation.
+ * - Renders a visual status tracker for each lead's phases.
+ * - Responsive layout with Sidebar, Navbar, and Footer.
+ *
+ * State:
+ * - sidebarOpen: Controls sidebar visibility.
+ * - filterOpen: Controls filter panel visibility.
+ * - searchTerm: Search input value.
+ * - statusFilter: Current status filter.
+ * - leads: All fetched leads.
+ * - filteredLeads: Leads after search/filter.
+ * - currentPage: Current pagination page.
+ * - leadsPerPage: Number of leads per page.
+ */
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';

@@ -13,7 +13,16 @@ import OpportunitiesPage from './pages/OpportunitiesPage';
 import PrivateRoute from './components/PrivateRoute';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import ForgotPassword from './pages/ForgotPassword';
+/**
+ * App Component
+ * Main entry point for the React application.
+ * 
+ * Features:
+ * - Defines all application routes using React Router.
+ * - Uses PrivateRoute to protect authenticated routes.
+ * - Integrates ToastContainer for global notifications.
+ */
 function App() {
     return (
         <>
@@ -21,6 +30,7 @@ function App() {
               {/* <Route path="/" element={<HomePage />} /> */}
               <Route path="/signin" element={<Signin />} />
               <Route path="/signup" element={<SignupPage />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route element={<PrivateRoute />}>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/leads">

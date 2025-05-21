@@ -1,5 +1,5 @@
 
-// models/LeadInfo.model.js
+// models/LeadInfo.model.js Defines the schema for a lead entity.
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 

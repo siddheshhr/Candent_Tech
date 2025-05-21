@@ -1,3 +1,4 @@
+// Defines the schema for a company entity. 
 const mongoose = require('mongoose');
 
 const companySchema = new mongoose.Schema({

@@ -1,6 +1,12 @@
 
 import React, { useState } from 'react';
-
+/**
+ * LeadDescription Component
+ * Displays the lead's description with "Read More"/"Show Less" toggle for long text.
+ *
+ * Props:
+ * - description: The description text for the lead.
+ */
 const LeadDescription = ({ description }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 

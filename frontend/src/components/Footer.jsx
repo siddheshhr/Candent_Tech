@@ -1,7 +1,7 @@
 import React from 'react';
 import ima from '../assets/logo.png';
 import { Twitter, Instagram, Youtube, Linkedin } from 'lucide-react';
-
+//footer component 
 const Footer = () => {
   return (
     <footer className="w-full bg-gray-800 text-white py-4 relative z-10">

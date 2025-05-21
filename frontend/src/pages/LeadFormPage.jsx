@@ -4,6 +4,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Plus, Trash2 } from 'lucide-react';
 
+// * Form page for adding a new lead, including personal details, company details, contacts, and phases.
+
 export default function LeadFormPage() {
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});

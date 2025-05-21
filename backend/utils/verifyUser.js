@@ -1,4 +1,13 @@
-
+/**
+ * verifyUser.js
+ * Middleware to verify JWT tokens for protected routes.
+ * 
+ * - Checks for a JWT token in cookies or the Authorization header.
+ * - If token is missing or invalid, passes an error to the next middleware.
+ * - If valid, attaches the decoded user info to req.user and calls next().
+ * 
+ * Usage: Add as middleware to routes that require authentication.
+ */
 const jwt = require("jsonwebtoken");
 const { errorHandler } = require("./error");
 

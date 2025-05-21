@@ -1,6 +1,16 @@
 
 import React from 'react';
-
+/**
+ * LeadCard Component
+ * Displays a card with lead information including name, designation, company, date added, and profile image.
+ *
+ * Props:
+ * - name: Name of the lead.
+ * - designation: Designation or role of the lead.
+ * - company: Company name.
+ * - dateAdded: Date when the lead was added.
+ * - imageUrl: URL of the lead's profile image (shows a placeholder if not provided).
+ */
 const LeadCard = ({ name, designation, company, dateAdded, imageUrl }) => {
   return (
     <div className="w-[450px] mr-[40px] bg-white rounded-lg shadow-md p-6 flex items-start space-x-4">
