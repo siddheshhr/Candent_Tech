@@ -1,7 +1,5 @@
 const Lead = require('../models/LeadInfo.model');
 const Company = require('../models/Company.model');
-const CompanyMember = require('../models/CompanyMembers.model');
-const Phase = require('../models/Phase.model');
 const mongoose = require('mongoose');
 
 // GET all leads
