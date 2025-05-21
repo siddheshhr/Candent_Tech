@@ -51,7 +51,7 @@ function Signin() {
       } else {
         dispatch(signInSucess(data));
         toast.success("Signed in successfully!");
-        navigate('/dashboard');
+        navigate('/');
       }
     } catch (error) {
       dispatch(signInFailure(error.message));

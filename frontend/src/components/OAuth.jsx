@@ -32,7 +32,7 @@ function OAuth() {
             
             if (response.ok) {
                 dispatch(signInSucess(data)); // Fixed typo in action name
-                navigate('/dashboard');
+                navigate('/');
             } else {
                 console.error('Backend error:', data.message);
             }

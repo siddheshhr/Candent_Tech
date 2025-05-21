@@ -21,8 +21,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const sidebarWidth = isOpen ? 'w-64' : 'w-16';
 
   // Handle logout process with Toastify notification
-//   import { toast } from "react-toastify";
-// import { useNavigate } from "react-router-dom";
+
 
 const handleLogout = () => {
   // Clear cookies
@@ -38,10 +37,7 @@ const handleLogout = () => {
   // Show a sign-out notification
   toast.success("Signed out!", { autoClose: 1000 }); // close after 1 second
   window.location.href = "/signin";
-  // Navigate to sign-in after toast
-  // setTimeout(() => {
-  //   navigate("/signin");
-  // }, 1000);
+
 };
 
 
