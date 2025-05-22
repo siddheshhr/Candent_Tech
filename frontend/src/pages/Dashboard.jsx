@@ -14,6 +14,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import jsPDF from 'jspdf';
+import { useSelector } from 'react-redux';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -38,6 +39,7 @@ const itemVariants = {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const currentUser = useSelector((state) => state.user.currentUser);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -48,11 +50,13 @@ export default function Dashboard() {
     totalLeads: 0,
     totalCompanies: 0,
     totalOpportunities: 0,
-    leadsPerMonth: [],    // [{ month: '2025-04', count: 5 }, …]
-    recentLeads: [],      // [{ name, company: {name}, leadAddedDate }, …]
-    leadsByStage: [],     // [{ stage: 'Initial Contact', count: 10 }, ...]
-    upcomingTasks: []     // [{ title, dueDate, priority }, ...]
+    leadsPerMonth: [],
+    recentLeads: [],
+    recentOpportunities: [], // <-- add this
+    leadsByStage: [],
+    upcomingTasks: []
   });
+
 
   // Get current user info
   useEffect(() => {
@@ -77,7 +81,6 @@ export default function Dashboard() {
       const res = await axios.get(`http://localhost:3000/api/leads/stats?range=${range}`, 
         { withCredentials: true }
       );
-      
       if (res.data.success) {
         setStats({
           totalLeads: res.data.totalLeads,
@@ -85,6 +88,7 @@ export default function Dashboard() {
           totalOpportunities: res.data.totalOpportunities || 0,
           leadsPerMonth: res.data.leadsPerMonth,
           recentLeads: res.data.recentLeads,
+          recentOpportunities: res.data.recentOpportunities || [], // <-- add this
           leadsByStage: res.data.leadsByStage || [],
           upcomingTasks: res.data.upcomingTasks || []
         });
@@ -172,12 +176,28 @@ export default function Dashboard() {
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
+  if (currentUser?.role === 'client') {
+    // Minimal dashboard for clients
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <h2 className="text-2xl font-bold mb-4">Welcome, {currentUser.firstName || currentUser.email}</h2>
+        <p className="text-gray-600">You have limited access. Please check your assigned leads.</p>
+      </div>
+    );
+  }
+
+  // Conversion Factor: current opportunities / (total leads - current opportunities)
+  const denominator = stats.totalLeads - stats.totalOpportunities;
+  const conversionFactor =
+    denominator > 0
+      ? ((stats.totalOpportunities / denominator) ).toFixed(2)
+      : '0.00';
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar}/>
       <div className="flex flex-col flex-1">
         <Navbar toggleSidebar={toggleSidebar}/>
-
         <motion.div
           className="p-6 flex-grow"
           variants={containerVariants}
@@ -191,7 +211,7 @@ export default function Dashboard() {
           >
             <div>
               <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                Welcome, {userName}
+                Welcome, {currentUser?.firstName || currentUser?.name || currentUser?.email || 'User'}
               </h1>
               <p className="text-gray-500 text-lg">
                 {new Date().toLocaleDateString('en-US', { 
@@ -204,7 +224,7 @@ export default function Dashboard() {
             
             <div className="flex flex-wrap gap-3">
               {/* Date range selector */}
-             
+            
 
               {/* Refresh button */}
               <motion.button
@@ -293,12 +313,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="mt-4 flex justify-end">
-                    <button 
-                      onClick={() => navigate('/companies')}
-                      className="text-orange-600 text-sm hover:underline"
-                    >
-                      View all companies →
-                    </button>
+                    
                   </div>
                 </motion.div>
               </motion.div>
@@ -325,12 +340,12 @@ export default function Dashboard() {
                   iconColor="text-amber-600"
                 />
                 <StatsCard
-                  icon={<Percent size={24}/>}
-                  value={`${conversionRate}%`}
-                  label="Conversion Rate"
-                  bgColor="bg-green-100"
-                  iconCircle="bg-green-200"
-                  iconColor="text-green-600"
+                    icon={<Percent size={24}/>}
+                    value={`${conversionFactor}`}
+                    label="Conversion Factor"
+                    bgColor="bg-green-100"
+                    iconCircle="bg-green-200"
+                    iconColor="text-green-600"
                 />
                 <StatsCard
                   icon={<Layers size={24}/>}
@@ -342,130 +357,126 @@ export default function Dashboard() {
                 />
               </motion.div>
 
-              {/* Charts & Recent Leads */}
+              {/* Charts & Lead Stage Progress */}
+              <motion.div
+                className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8"
+                variants={containerVariants}
+              >
+                {/* Lead trend chart */}
+                <motion.div 
+                  variants={itemVariants}
+                  className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100"
+                >
+                  <h2 className="text-2xl font-bold text-gray-800 mb-4">Lead Activity</h2>
+                  <div className="h-80">
+                    <OpportunityChart 
+                      data={stats.leadsPerMonth} 
+                      timeRange={dateRange}
+                    />
+                  </div>
+                </motion.div>
+
+                {/* Stage distribution chart */}
+                <motion.div variants={itemVariants}>
+                  <ProgressItem data={stats.leadsByStage} />
+                </motion.div>
+              </motion.div>
+
+              {/* Recent Leads and Recent Opportunities Side by Side */}
               <motion.div
                 className="grid grid-cols-1 xl:grid-cols-2 gap-8"
                 variants={containerVariants}
               >
-                <motion.div className="space-y-8" variants={containerVariants}>
-                  {/* Lead trend chart */}
-                  <motion.div 
-                    variants={itemVariants}
-                    className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100"
-                  >
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Lead Activity</h2>
-                    <div className="h-80">
-                      <OpportunityChart 
-                        data={stats.leadsPerMonth} 
-                        timeRange={dateRange}
-                      />
-                    </div>
-                  </motion.div>
-                  
-                  {/* Upcoming tasks card */}
-                  <motion.div 
-                    variants={itemVariants}
-                    className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100"
-                  >
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-2xl font-bold text-gray-800">Recent Opportunity</h2>
-                      <button 
-                        onClick={() => navigate('/tasks')}
-                        className="text-blue-600 text-sm hover:underline"
+                {/* Recent leads */}
+                <motion.div
+                  className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100"
+                  variants={itemVariants}
+                >
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-800">Recent Leads</h2>
+                    <button 
+                      onClick={() => navigate('/leads')}
+                      className="text-blue-600 text-sm hover:underline"
+                    >
+                      View all →
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-12 border-b pb-3 mb-2 text-sm text-gray-500 uppercase">
+                    <div className="col-span-5">Lead</div>
+                    <div className="col-span-4">Company</div>
+                    <div className="col-span-3">Date</div>
+                  </div>
+                  {stats.recentLeads.length > 0 ? (
+                    stats.recentLeads.map((lead, idx) => (
+                      <div
+                        key={idx}
+                        className="grid grid-cols-12 py-3 items-center border-b last:border-0 hover:bg-gray-50 transition-colors rounded-lg cursor-pointer"
+                        onClick={() => navigate(`/leads/${lead.id}`)}
                       >
-                        View all →
-                      </button>
-                    </div>
-                    
-                    {stats.upcomingTasks && stats.upcomingTasks.length > 0 ? (
-                      <div className="space-y-4">
-                        {stats.upcomingTasks.slice(0, 3).map((task, idx) => (
-                          <div 
-                            key={idx} 
-                            className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                          >
-                            <div className={`w-2 h-10 rounded-full mr-4 ${
-                              task.priority === 'high' ? 'bg-red-500' :
-                              task.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-                            }`}/>
-                            <div className="flex-1">
-                              <h4 className="font-medium">{task.title}</h4>
-                              <p className="text-sm text-gray-500">
-                                {new Date(task.dueDate).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <div className="flex gap-2">
-                              <Calendar size={16} className="text-gray-400" />
-                              <span className="text-sm text-gray-500">
-                                {new Date(task.dueDate).toLocaleDateString(undefined, {
-                                  month: 'short',
-                                  day: 'numeric'
-                                })}
-                              </span>
-                            </div>
+                        <div className="col-span-5 flex items-center">
+                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mr-3 flex items-center justify-center text-white font-medium">
+                            {lead.name.charAt(0).toUpperCase()}
                           </div>
-                        ))}
+                          <span className="font-medium">{lead.name}</span>
+                        </div>
+                        <div className="col-span-4 text-gray-800">
+                          {lead.company?.name || '—'}
+                        </div>
+                        <div className="col-span-3 text-gray-600">
+                          {new Date(lead.leadAddedDate).toLocaleDateString()}
+                        </div>
                       </div>
-                    ) : (
-                      <p className="text-center text-gray-500 py-4">No upcoming tasks.</p>
-                    )}
-                  </motion.div>
+                    ))
+                  ) : (
+                    <p className="text-center text-gray-500 py-4">No recent leads.</p>
+                  )}
                 </motion.div>
 
-                <motion.div className="space-y-8" variants={containerVariants}>
-                  {/* Stage distribution chart */}
-                 
-                    <ProgressItem data={stats.leadsByStage} />
-                  {/* </motion.div> */}
-                
-                  {/* Recent leads */}
-                  <motion.div
-                    className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100"
-                    variants={itemVariants}
-                  >
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-2xl font-bold text-gray-800">Recent Leads</h2>
-                      <button 
-                        onClick={() => navigate('/leads')}
-                        className="text-blue-600 text-sm hover:underline"
+                {/* Recent Opportunities */}
+                <motion.div
+                  className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100"
+                  variants={itemVariants}
+                >
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-800">Recent Opportunities</h2>
+                    <button 
+                      onClick={() => navigate('/opportunities')}
+                      className="text-blue-600 text-sm hover:underline"
+                    >
+                      View all →
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-12 border-b pb-3 mb-2 text-sm text-gray-500 uppercase">
+                    <div className="col-span-5">Opportunity</div>
+                    <div className="col-span-4">Company</div>
+                    <div className="col-span-3">Date</div>
+                  </div>
+                  {stats.recentOpportunities.length > 0 ? (
+                    stats.recentOpportunities.map((opp, idx) => (
+                      <div
+                        key={idx}
+                        className="grid grid-cols-12 py-3 items-center border-b last:border-0 hover:bg-gray-50 transition-colors rounded-lg cursor-pointer"
+                        onClick={() => navigate(`/opportunities/${opp._id}`)}
                       >
-                        View all →
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-12 border-b pb-3 mb-2 text-sm text-gray-500 uppercase">
-                      <div className="col-span-5">Lead</div>
-                      <div className="col-span-4">Company</div>
-                      <div className="col-span-3">Date</div>
-                    </div>
-                    {stats.recentLeads.length > 0 ? (
-                      stats.recentLeads.map((lead, idx) => (
-                        <div
-                          key={idx}
-                          className="grid grid-cols-12 py-3 items-center border-b last:border-0 hover:bg-gray-50 transition-colors rounded-lg cursor-pointer"
-                          onClick={() => navigate(`/leads/${lead.id}`)}
-                        >
-                          <div className="col-span-5 flex items-center">
-                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mr-3 flex items-center justify-center text-white font-medium">
-                              {lead.name.charAt(0).toUpperCase()}
-                            </div>
-                            <span className="font-medium">{lead.name}</span>
+                        <div className="col-span-5 flex items-center">
+                          <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-600 rounded-full mr-3 flex items-center justify-center text-white font-medium">
+                            {opp.name.charAt(0).toUpperCase()}
                           </div>
-                          <div className="col-span-4 text-gray-800">
-                            {lead.company?.name || '—'}
-                          </div>
-                          <div className="col-span-3 text-gray-600">
-                            {new Date(lead.leadAddedDate).toLocaleDateString()}
-                          </div>
+                          <span className="font-medium">{opp.name}</span>
                         </div>
-                      ))
-                    ) : (
-                      <p className="text-center text-gray-500 py-4">No recent leads.</p>
-                    )}
-                  </motion.div>
+                        <div className="col-span-4 text-gray-800">
+                          {opp.company?.name || '—'}
+                        </div>
+                        <div className="col-span-3 text-gray-600">
+                          {new Date(opp.leadAddedDate).toLocaleDateString()}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-gray-500 py-4">No recent opportunities.</p>
+                  )}
                 </motion.div>
               </motion.div>
-              
-              {/* Notifications panel */}
             </>
           )}
         </motion.div>

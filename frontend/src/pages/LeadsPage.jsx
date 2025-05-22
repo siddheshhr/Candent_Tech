@@ -26,6 +26,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -44,6 +45,7 @@ const LeadsPage = () => {
   const [leadsPerPage] = useState(4);
   const navigate = useNavigate();
   const location = useLocation();
+  const currentUser = useSelector((state) => state.user.currentUser);
 
   useEffect(() => {
     fetchLeads();
@@ -51,7 +53,9 @@ const LeadsPage = () => {
 
   const fetchLeads = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/leads');
+      const response = await axios.get('http://localhost:3000/api/leads', {
+        withCredentials: true // <-- This is required for cookies/JWT!
+      });
       if (response.data.success) {
         const fetchedLeads = response.data.data.map((lead) => {
           const phases = lead.phases.map((phase) => ({
@@ -62,9 +66,9 @@ const LeadsPage = () => {
           const currentStage = phases.findIndex((phase) => phase.status !== 'Completed');
           const isFullyCompleted = currentStage === -1;
           return {
-            id: lead._id,
+            _id: lead._id, // Always use _id for MongoDB
             name: lead.name,
-            company: lead.company.name,
+            company: lead.company?.name || '', // Defensive: company may be null
             phases,
             currentStage: isFullyCompleted ? phases.length - 1 : currentStage,
             isFullyCompleted,
@@ -133,6 +137,7 @@ const LeadsPage = () => {
   };
 
   const handleDelete = async (id) => {
+    if (currentUser?.role === 'client') return; // Prevent client from deleting
     if (window.confirm('Are you sure you want to delete this lead?')) {
       try {
         await axios.delete(`http://localhost:3000/api/leads/${id}`, { withCredentials: true });
@@ -184,7 +189,7 @@ const LeadsPage = () => {
           return (
             <React.Fragment key={phase.name}>
               <div className="flex flex-col items-center">
-                <div className={circleClasses}>
+                <div className={circleClasses} title={phase.status}>
                   {statusIcon}
                 </div>
                 <span className="mt-1 text-xs text-gray-600">{phase.name}</span>
@@ -281,6 +286,19 @@ const LeadsPage = () => {
     );
   };
 
+  const isClient = currentUser?.role === 'client';
+
+  const clientWelcome = (
+    <div className="mb-8 flex flex-col items-center">
+      <h2 className="text-2xl font-bold mb-2">
+        Welcome, {currentUser?.firstName || currentUser?.username || currentUser?.email}
+      </h2>
+      <p className="text-gray-600 text-center max-w-xl">
+        Here you can view all the leads you are associated with. If you have any questions, please contact your company representative.
+      </p>
+    </div>
+  );
+
   return (
     <div className="flex h-screen">
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
@@ -288,6 +306,8 @@ const LeadsPage = () => {
         <Navbar toggleSidebar={toggleSidebar} />
         <main className="flex-1 p-2 bg-gray-70 overflow-x-hidden overflow-y-auto">
           <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-md p-4">
+            {/* Show welcome for client */}
+            {isClient && clientWelcome}
             <div className="flex justify-between items-center pb-4 mb-4 border-b">
               <div className="relative flex-1 mr-4">
                 <input
@@ -300,20 +320,25 @@ const LeadsPage = () => {
                 <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
               </div>
               <div className="flex space-x-2">
-                <Link to="/leadform">
+                {/* Only show Add Lead if not client */}
+                {currentUser?.role !== 'client' && (
+                  <Link to="/leadform">
+                    <button
+                      className="bg-[#51A1E0] text-white px-4 py-2 rounded-lg flex items-center hover:bg-[#4086ba] transition-colors hover:shadow-md"
+                    >
+                      <PlusCircle className="mr-2" size={20} /> Add Lead
+                    </button>
+                  </Link>
+                )}
+                {currentUser?.role !== 'client' && (
                   <button
-                    className="bg-[#51A1E0] text-white px-4 py-2 rounded-lg flex items-center hover:bg-[#4086ba] transition-colors hover:shadow-md"
+                    className="border rounded-lg p-2 hover:bg-gray-100 transition-colors hover:shadow"
+                    onClick={handleDownload}
+                    title="Download Leads Report"
                   >
-                    <PlusCircle className="mr-2" size={20} /> Add Lead
+                    <Download size={20} />
                   </button>
-                </Link>
-                <button
-                  className="border rounded-lg p-2 hover:bg-gray-100 transition-colors hover:shadow"
-                  onClick={handleDownload}
-                  title="Download Leads Report"
-                >
-                  <Download size={20} />
-                </button>
+                )}
                 <button
                   className={`border rounded-lg p-2 hover:bg-gray-100 transition-colors hover:shadow ${filterOpen ? 'bg-gray-100' : ''}`}
                   onClick={toggleFilter}
@@ -361,33 +386,34 @@ const LeadsPage = () => {
               </thead>
               <tbody>
                 {currentLeads.map((lead) => (
-                  <tr
-                    key={lead.id}
-                    className="shadow-md rounded-lg bg-white transition-colors duration-200 hover:shadow-lg hover:bg-gray-100"
-                  >
+                  <tr key={lead._id} className="shadow-md rounded-lg bg-white transition-colors duration-200 hover:shadow-lg hover:bg-gray-100">
                     <td className="p-3">{lead.name}</td>
-                    <td className="p-3">{lead.company}</td>
+                    <td className="p-3">{lead.company || '—'}</td>
                     <td className="p-3">{renderStatusDots(lead.phases)}</td>
                     <td className="p-3 text-right flex justify-end space-x-2">
                       <button
-                        onClick={() => handleViewDetail(lead.id)}
+                        onClick={() => handleViewDetail(lead._id)}
                         className="inline-flex items-center px-3 py-2 bg-[#51A1E0] text-white rounded-lg hover:bg-[#4086ba] hover:shadow-lg transition-transform transform hover:scale-105"
                       >
                         View Details
                       </button>
-                      <button
-                        onClick={() => handleDelete(lead.id)}
-                        className="inline-flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 hover:shadow-lg transition-transform transform hover:scale-105"
-                      >
-                        <Trash2 className="w-4 h-4 mr-1" /> Delete
-                      </button>
+                      {currentUser?.role !== 'client' && (
+                        <button
+                          onClick={() => handleDelete(lead._id)}
+                          className="inline-flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 hover:shadow-lg transition-transform transform hover:scale-105"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" /> Delete
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
                 {currentLeads.length === 0 && (
                   <tr>
                     <td colSpan="4" className="text-center py-8 text-gray-500">
-                      No leads found matching your criteria
+                      {isClient
+                        ? "You are not associated with any leads yet. Please contact your company representative if you think this is a mistake."
+                        : "No leads found matching your criteria"}
                     </td>
                   </tr>
                 )}

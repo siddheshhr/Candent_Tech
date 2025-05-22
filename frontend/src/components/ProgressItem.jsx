@@ -1,4 +1,3 @@
-
 // src/components/ProgressItem.jsx
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -18,7 +17,7 @@ export default function ProgressItem() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('http://localhost:3000/api/leads');
+      const response = await axios.get('http://localhost:3000/api/leads', { withCredentials: true }); // <-- FIXED
       
       if (response.data.success) {
         const allLeads = response.data.data;

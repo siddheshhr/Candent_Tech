@@ -1,15 +1,16 @@
 const express = require('express');
 const router = express.Router();
+const { verifyToken } = require('../utils/verifyUser');
 const leadController = require('../controller/lead_controller');
 
 // Route to get stats
-router.get('/stats', leadController.getStats);
+router.get('/stats', verifyToken, leadController.getStats);
 
 // Route to add a new lead
 router.post('/add', leadController.createLead);
 
 // Route to get all leads
-router.get('/', leadController.getAllLeads);
+router.get('/', verifyToken, leadController.getAllLeads);
 
 // Route to get a single lead by ID
 router.get('/:id', leadController.getLeadById);

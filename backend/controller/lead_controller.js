@@ -5,7 +5,19 @@ const mongoose = require('mongoose');
 // GET all leads
 exports.getAllLeads = async (req, res, next) => {
   try {
-    const leads = await Lead.find().populate('company');
+    const user = req.user;
+    let leads;
+    if (user.role === 'client') {
+      // Show leads where the client's email OR name is in contacts
+      leads = await Lead.find({
+        $or: [
+          { 'contacts.email': user.email },
+          { 'contacts.name': user.firstName + ' ' + user.lastName }
+        ]
+      }).populate('company');
+    } else {
+      leads = await Lead.find().populate('company');
+    }
     res.status(200).json({ success: true, data: leads });
   } catch (err) {
     next(err);
@@ -111,7 +123,17 @@ exports.deleteLead = async (req, res, next) => {
     if (!lead) {
       return res.status(404).json({ success: false, message: 'Lead not found' });
     }
-    res.status(200).json({ success: true, message: 'Lead deleted' });
+
+    // Check if any other leads reference this company
+    if (lead.company) {
+      const otherLeads = await Lead.findOne({ company: lead.company });
+      if (!otherLeads) {
+        // No other leads reference this company, so delete it
+        await Company.findByIdAndDelete(lead.company);
+      }
+    }
+
+    res.status(200).json({ success: true, message: 'Lead and (if unused) company deleted' });
   } catch (err) {
     next(err);
   }
@@ -123,9 +145,18 @@ exports.deleteLead = async (req, res, next) => {
  */
 exports.getStats = async (req, res, next) => {
   try {
-    // 1) total counts
+    const user = req.user;
+    if (user.role === 'client') {
+      return res.status(200).json({ success: true, data: null });
+    }
+
     const totalLeads = await Lead.countDocuments();
     const totalCompanies = await Company.countDocuments();
+
+    // Calculate total opportunities (all phases completed)
+    const totalOpportunities = await Lead.countDocuments({
+      phases: { $not: { $elemMatch: { status: { $ne: 'Completed' } } } }
+    });
 
     // 2) group leads by year-month
     const leadsPerMonth = await Lead.aggregate([
@@ -147,12 +178,23 @@ exports.getStats = async (req, res, next) => {
       .populate("company", "name")
       .lean();
 
-    return res.status(200).json({
+    // 4) fetch 5 most-recent opportunities (all phases completed)
+    const recentOpportunities = await Lead
+      .find({ phases: { $not: { $elemMatch: { status: { $ne: 'Completed' } } } } })
+      .sort({ leadAddedDate: -1 })
+      .limit(5)
+      .select("name company leadAddedDate")
+      .populate("company", "name")
+      .lean();
+
+    res.status(200).json({
       success: true,
       totalLeads,
       totalCompanies,
+      totalOpportunities,
       leadsPerMonth: leadsPerMonth.map(d => ({ month: d._id, count: d.count })),
-      recentLeads
+      recentLeads,
+      recentOpportunities,
     });
   } catch (err) {
     next(err);
