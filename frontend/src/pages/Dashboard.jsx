@@ -22,6 +22,9 @@ import OpportunityChart from '../components/OpportunityChart';
 import ProgressItem from '../components/ProgressItem';
 import { PieChart, Briefcase, Percent, Users, Download, RefreshCw, Bell, Calendar, Layers } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import useLeadStats from './../components/useLeadsState.js';
+import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';  
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -37,11 +40,20 @@ const itemVariants = {
 };
 
 export default function Dashboard() {
+// fetch lead stats
+  // Custom hook to fetch lead stats
+  const {
+      opportunityCount,
+      leadsCount,
+      opportunityPercentage,
+      leadsPercentage,
+      isLoadings,
+    } = useLeadStats();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [userName, setUserName] = useState('');
+  // const [userName, setUserName] = useState('');
   const [dateRange, setDateRange] = useState('month'); // 'week', 'month', 'quarter', 'year'
   
   const [stats, setStats] = useState({
@@ -55,20 +67,28 @@ export default function Dashboard() {
   });
 
   // Get current user info
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const res = await axios.get('http://localhost:3000/api/user/current', { withCredentials: true });
-        if (res.data.success) {
-          setUserName(res.data.user.firstName || res.data.user.name || 'User');
-        }
-      } catch (error) {
-        console.error('Error fetching user info:', error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchUserInfo = async () => {
+  //     try {
+  //       const res = await axios.get('http://localhost:3000/api/user/current', { withCredentials: true });
+  //       if (res.data.success) {
+  //         setUserName(res.data.user.firstName || res.data.user.name || 'User');
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching user info:', error);
+  //     }
+  //   };
     
-    fetchUserInfo();
-  }, []);
+  //   fetchUserInfo();
+  // }, []);
+
+    // ─── PULL userName FROM REDUX ─────────────────────────────
+  const currentUser = useSelector(state => state.user.currentUser);
+  const userName = currentUser
+    ? `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim()
+    : 'User';
+  // ───────────────────────────────────────────────────────────
+
 
   // Fetch dashboard data
   const fetchDashboardData = async (range = dateRange) => {
@@ -288,7 +308,7 @@ export default function Dashboard() {
                     <div>
                       <h3 className="text-gray-500 text-lg">Total Companies</h3>
                       <p className="text-4xl font-bold text-gray-800 mt-2">
-                        {stats.totalCompanies}
+                        {stats.totalLeads}
                       </p>
                     </div>
                   </div>
@@ -310,31 +330,31 @@ export default function Dashboard() {
               >
                 <StatsCard
                   icon={<PieChart size={24}/>}
-                  value={stats.totalLeads}
-                  label="Total Leads"
+                  value={leadsCount}
+                  label="Recent Leads"
                   bgColor="bg-pink-100"
                   iconCircle="bg-pink-200"
                   iconColor="text-pink-600"
                 />
                 <StatsCard
                   icon={<Briefcase size={24}/>}
-                  value={stats.totalCompanies}
-                  label="Companies"
+                  value={leadsCount}
+                  label="Recent Companies"
                   bgColor="bg-amber-100"
                   iconCircle="bg-amber-200"
                   iconColor="text-amber-600"
-                />
+                />  
                 <StatsCard
                   icon={<Percent size={24}/>}
-                  value={`${conversionRate}%`}
-                  label="Conversion Rate"
+                  value={`${opportunityCount / ((leadsCount + opportunityCount))}%`}
+                  label="Conversion Factor"
                   bgColor="bg-green-100"
                   iconCircle="bg-green-200"
                   iconColor="text-green-600"
                 />
                 <StatsCard
                   icon={<Layers size={24}/>}
-                  value={stats.totalOpportunities}
+                  value={opportunityCount}
                   label="Opportunities"
                   bgColor="bg-blue-100"
                   iconCircle="bg-blue-200"
@@ -415,7 +435,7 @@ export default function Dashboard() {
                 <motion.div className="space-y-8" variants={containerVariants}>
                   {/* Stage distribution chart */}
                  
-                    <ProgressItem data={stats.leadsByStage} />
+                    <ProgressItem data={stats.totalLeads} />
                   {/* </motion.div> */}
                 
                   {/* Recent leads */}

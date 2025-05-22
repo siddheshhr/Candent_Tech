@@ -326,7 +326,7 @@ const OpportunitiesPage = () => {
 
     return (
       <div className="mb-6">
-        <div className="flex justify-between items-center mb-2">
+        {/* <div className="flex justify-between items-center mb-2">
           <h2 className="text-lg font-semibold">Performance Metrics</h2>
           <button 
             onClick={toggleEditStats}
@@ -342,9 +342,9 @@ const OpportunitiesPage = () => {
               </>
             )}
           </button>
-        </div>
+        </div> */}
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-blue-50 p-4 rounded-lg shadow">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
@@ -452,7 +452,7 @@ const OpportunitiesPage = () => {
               </div>
             )}
           </div>
-        </div>
+        </div> */}
       </div>
     );
   };
