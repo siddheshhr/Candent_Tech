@@ -308,8 +308,8 @@ const LeadsPage = () => {
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
       <div className="flex-1 flex flex-col">
         <Navbar toggleSidebar={toggleSidebar} />
-        <main className="flex-1 p-2 bg-gray-70 overflow-x-hidden overflow-y-auto">
-          <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-md p-4">
+        <main className="flex-1 p-2 bg-gray-70 mt-[30px] overflow-x-hidden overflow-y-auto">
+          <div className="max-w-7xl mx-auto mb-[40px] bg-white rounded-lg shadow-md p-4">
             {/* Show welcome for client */}
             {isClient && clientWelcome}
             <div className="flex justify-between items-center pb-4 mb-4 border-b">
