@@ -7,6 +7,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useNavigate } from 'react-router-dom';
 import { Search, Download, Filter, Check, X, Trash2, Clock, DollarSign, BarChart4, Edit2, Save } from 'lucide-react';
+import { useSelector } from 'react-redux';
 
 const OpportunitiesPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -27,13 +28,15 @@ const OpportunitiesPage = () => {
   const [targetConversion, setTargetConversion] = useState(0);
   const [targetHighPriority, setTargetHighPriority] = useState(0);
 
+  const currentUser = useSelector((state) => state.user.currentUser);
+
   useEffect(() => {
     fetchOpportunities();
   }, []);
 
   const fetchOpportunities = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/leads');
+      const response = await axios.get('http://localhost:3000/api/leads', { withCredentials: true });
       if (response.data.success) {
         // Filter only fully completed leads
         const completedLeads = response.data.data
@@ -47,10 +50,18 @@ const OpportunitiesPage = () => {
             const priority = ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)];
             const conversionRate = Math.floor(Math.random() * 41) + 60; // 60-100%
             
+            // FIX: Safely get company name
+            let companyName = '';
+            if (typeof lead.company === 'object' && lead.company !== null) {
+              companyName = lead.company.name || '';
+            } else if (typeof lead.company === 'string') {
+              companyName = lead.company;
+            }
+
             return {
               id: lead._id,
               name: lead.name,
-              company: lead.company.name,
+              company: companyName || '—',
               completionDate: new Date(completionDate),
               estimatedValue,
               priority,
@@ -326,7 +337,7 @@ const OpportunitiesPage = () => {
 
     return (
       <div className="mb-6">
-        <div className="flex justify-between items-center mb-2">
+        {/* <div className="flex justify-between items-center mb-2">
           <h2 className="text-lg font-semibold">Performance Metrics</h2>
           <button 
             onClick={toggleEditStats}
@@ -342,9 +353,9 @@ const OpportunitiesPage = () => {
               </>
             )}
           </button>
-        </div>
+        </div> */}
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-blue-50 p-4 rounded-lg shadow">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
@@ -452,10 +463,19 @@ const OpportunitiesPage = () => {
               </div>
             )}
           </div>
-        </div>
+        </div> */}
       </div>
     );
   };
+
+  if (currentUser?.role === 'client') {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <h2 className="text-2xl font-bold mb-4">Access Restricted</h2>
+        <p className="text-gray-600">Clients do not have access to Opportunities.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen">
@@ -477,13 +497,15 @@ const OpportunitiesPage = () => {
                 <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
               </div>
               <div className="flex space-x-2">
-                <button
-                  className="border rounded-lg p-2 hover:bg-gray-100 transition-colors hover:shadow"
-                  onClick={handleDownload}
-                  title="Download Opportunities Report"
-                >
-                  <Download size={20} />
-                </button>
+                {currentUser?.role !== 'client' && (
+                  <button
+                    className="border rounded-lg p-2 hover:bg-gray-100 transition-colors hover:shadow"
+                    onClick={handleDownload}
+                    title="Download Opportunities Report"
+                  >
+                    <Download size={20} />
+                  </button>
+                )}
                 <button
                   className={`border rounded-lg p-2 hover:bg-gray-100 transition-colors hover:shadow ${filterOpen ? 'bg-gray-100' : ''}`}
                   onClick={toggleFilter}

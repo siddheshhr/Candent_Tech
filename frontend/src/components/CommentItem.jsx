@@ -3,11 +3,13 @@ import { ThumbsUp, Clock, MessageCircle, Send, Trash2, MoreHorizontal } from 'lu
 import TimeAgo from './TimeAgo';
 
 function CommentItem({ comment, onToggleLike, onReply, onDelete }) {
+  // State for toggling replies, reply input, reply mode, and menu
   const [showReplies, setShowReplies] = useState(false);
   const [replyContent, setReplyContent] = useState('');
   const [isReplying, setIsReplying] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
+   // Handle reply form submission
   const handleReplySubmit = (e) => {
     e.preventDefault();
     if (replyContent.trim()) {
@@ -19,7 +21,7 @@ function CommentItem({ comment, onToggleLike, onReply, onDelete }) {
 
   return (
     <div className="p-4 border-b last:border-b-0">
-      {/* Comment Header */}
+      {/* Comment Header: Avatar, name, time, menu */}
       <div className="flex justify-between">
         <div className="flex items-center mb-2">
           <div className="w-8 h-8 bg-gray-300 rounded-full mr-2 flex items-center justify-center">
@@ -41,6 +43,7 @@ function CommentItem({ comment, onToggleLike, onReply, onDelete }) {
           >
             <MoreHorizontal size={16} />
           </button>
+           {/* Dropdown menu for comment actions */}
           {showMenu && (
             <div className="absolute right-0 mt-1 bg-white shadow-lg rounded-md py-1 z-10 w-32">
               <button
@@ -62,7 +65,7 @@ function CommentItem({ comment, onToggleLike, onReply, onDelete }) {
         {comment.content}
       </div>
 
-      {/* Comment Actions */}
+       {/* Comment Actions: Like, Reply, Show Replies */}
       <div className="flex items-center space-x-4 text-sm text-gray-500 pl-10">
         <button 
           onClick={() => onToggleLike(comment._id)}
@@ -112,7 +115,7 @@ function CommentItem({ comment, onToggleLike, onReply, onDelete }) {
         </form>
       )}
 
-      {/* Replies */}
+      {/* Replies  List*/}
       {showReplies && comment.replies && comment.replies.length > 0 && (
         <div className="mt-3 pl-10 space-y-3">
           {comment.replies.map((reply) => (

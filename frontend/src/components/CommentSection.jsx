@@ -2,16 +2,27 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 
-// Reply component
+/**
+ * Reply Component
+ * Renders a single reply with edit and delete options for the owner or admin.
+ * Props:
+ * - reply: The reply object.
+ * - commentId: ID of the parent comment.
+ * - currentUser: The currently logged-in user.
+ * - onDelete: Function to delete a reply.
+ * - fetchComments: Function to refresh the comments list after update/delete.
+ */
 const Reply = ({ reply, commentId, currentUser, onDelete, fetchComments }) => {
   const [editing, setEditing] = useState(false);
   const [editContent, setEditContent] = useState(reply.content);
   
+    // Format date for display
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString();
   };
-  
+
+  // Handle reply edit submission
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     
@@ -44,6 +55,7 @@ const Reply = ({ reply, commentId, currentUser, onDelete, fetchComments }) => {
           <div className="font-medium">{reply.username}</div>
           <div className="text-gray-500 text-sm ml-2">{formatDate(reply.createdAt)}</div>
         </div>
+        {/* Show edit/delete for reply owner or admin */}
         {currentUser && (currentUser._id === reply.userId || currentUser.role === 'admin') && (
           <div className="flex space-x-2">
             {currentUser._id === reply.userId && (
@@ -66,7 +78,7 @@ const Reply = ({ reply, commentId, currentUser, onDelete, fetchComments }) => {
           </div>
         )}
       </div>
-      
+      {/* Edit reply form */}
       {editing ? (
         <form onSubmit={handleEditSubmit} className="mt-2">
           <textarea
@@ -98,18 +110,29 @@ const Reply = ({ reply, commentId, currentUser, onDelete, fetchComments }) => {
   );
 };
 
-// Comment component
+/**
+ * Comment Component
+ * Renders a single comment with edit, delete, and reply functionality.
+ * Also renders its replies using the Reply component.
+ * Props:
+ * - comment: The comment object.
+ * - currentUser: The currently logged-in user.
+ * - onDelete: Function to delete a comment.
+ * - fetchComments: Function to refresh the comments list after update/delete.
+ */
 const Comment = ({ comment, currentUser, onDelete, fetchComments }) => {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState('');
   const [editing, setEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
   
+  // Format date for display
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString();
   };
   
+  // Handle comment edit submission
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     
@@ -135,6 +158,7 @@ const Comment = ({ comment, currentUser, onDelete, fetchComments }) => {
     }
   };
   
+    // Handle reply submission
   const handleReplySubmit = async (e) => {
     e.preventDefault();
     
@@ -162,6 +186,7 @@ const Comment = ({ comment, currentUser, onDelete, fetchComments }) => {
     }
   };
 
+  // Handle reply deletion
   const handleDeleteReply = async (replyId) => {
     try {
       const response = await axios.delete(
@@ -188,6 +213,7 @@ const Comment = ({ comment, currentUser, onDelete, fetchComments }) => {
           <div className="font-medium">{comment.username}</div>
           <div className="text-gray-500 text-sm ml-2">{formatDate(comment.createdAt)}</div>
         </div>
+         {/* Show edit/delete for comment owner or admin */}
         {currentUser && (currentUser._id === comment.userId || currentUser.role === 'admin') && (
           <div className="flex space-x-2">
             {currentUser._id === comment.userId && (
@@ -210,7 +236,7 @@ const Comment = ({ comment, currentUser, onDelete, fetchComments }) => {
           </div>
         )}
       </div>
-      
+      {/* Edit comment form */}
       {editing ? (
         <form onSubmit={handleEditSubmit} className="mt-2">
           <textarea
@@ -239,6 +265,7 @@ const Comment = ({ comment, currentUser, onDelete, fetchComments }) => {
         <div className="mt-2">{comment.content}</div>
       )}
       
+       {/* Reply button and form */}
       <div className="mt-2 flex">
         <button 
           onClick={() => setShowReplyForm(!showReplyForm)}
@@ -295,7 +322,13 @@ const Comment = ({ comment, currentUser, onDelete, fetchComments }) => {
   );
 };
 
-// Main CommentSection component
+/**
+ * CommentSection Component
+ * Main component to display, add, edit, and delete comments and replies for a lead.
+ * Handles pagination, sorting, and authentication checks.
+ * Props:
+ * - leadId: The ID of the lead for which to display comments.
+ */
 function CommentSection({ leadId }) {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
@@ -323,6 +356,7 @@ function CommentSection({ leadId }) {
     }
   }, [leadId, pagination.page, sort]);
 
+  // Fetch comments from API
   const fetchComments = async () => {
     if (!leadId) {
       console.log("No lead ID provided to CommentSection");
@@ -351,6 +385,7 @@ function CommentSection({ leadId }) {
     }
   };
 
+    // Handle new comment submission
   const handleSubmitComment = async (e) => {
     e.preventDefault();
     
@@ -398,6 +433,7 @@ function CommentSection({ leadId }) {
     }
   };
 
+  // Handle pagination
   const changePage = (newPage) => {
     if (newPage > 0 && newPage <= pagination.totalPages) {
       setPagination({...pagination, page: newPage});

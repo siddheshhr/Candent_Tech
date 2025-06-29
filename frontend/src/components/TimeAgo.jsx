@@ -1,6 +1,16 @@
 import React from 'react';
 import { Clock } from 'lucide-react';
-
+/**
+ * TimeAgo Component
+ * Displays a human-readable "time ago" string for a given date.
+ * 
+ * Props:
+ * - date: The date/time to format (string or Date object).
+ * 
+ * Features:
+ * - Shows "just now", "x minutes ago", "x hours ago", etc., up to years.
+ * - Includes a clock icon for visual context.
+ */
 function TimeAgo({ date }) {
   const formatTimeAgo = (dateString) => {
     const now = new Date();

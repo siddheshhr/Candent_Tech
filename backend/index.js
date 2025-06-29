@@ -1,13 +1,10 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-// const cors = require("cors");
 const authRoutes = require("./routes/auth_route.js");
 const userRoutes = require("./routes/user_route.js");
 
 const cookieParser = require("cookie-parser");
-// const cookieParser = require('cookie-parser');
-// index.js (already in your code)
 const leadRoutes = require("./routes/lead_routes.js");
 const commentRoutes = require('./routes/comment_route.js');
 
@@ -31,20 +28,24 @@ app.use(cors({
   credentials: true,
 }));
 
+// Middleware for parsing JSON and cookies
 app.use(express.json());
-app.use(cookieParser()); // for handling cookies
-// app.use(cookieParser());
+app.use(cookieParser()); 
+
+// Mount authentication and user routes
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
-app.use("/api/leads", leadRoutes); // Mounts the lead routes at /api/leads
+
+// Mount lead and comment routes under /api
+app.use("/api/leads", leadRoutes); 
 app.use('/api/comments', commentRoutes);
 
-// Test route
+// Test route to verify API is running
 app.get("/test", (req, res) => {
   res.json({ message: "API is working!" });
 });
 
-// Error handler
+// Global error handler middleware
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal Server Error";

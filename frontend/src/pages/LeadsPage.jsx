@@ -1,13 +1,46 @@
 // src/pages/LeadsPage.jsx
+/**
+ * LeadsPage Component
+ * Displays a paginated, searchable, and filterable list of leads with status tracking.
+ *
+ * Features:
+ * - Fetches leads from the backend and processes their phases/status.
+ * - Allows searching leads by name or company.
+ * - Filters leads by status (All, Not Started, In Progress, Completed, Stopped).
+ * - Supports pagination for large lead lists.
+ * - Allows downloading the current (filtered) leads as a CSV report.
+ * - Enables deleting leads with confirmation.
+ * - Renders a visual status tracker for each lead's phases.
+ * - Responsive layout with Sidebar, Navbar, and Footer.
+ *
+ * State:
+ * - sidebarOpen: Controls sidebar visibility.
+ * - filterOpen: Controls filter panel visibility.
+ * - searchTerm: Search input value.
+ * - statusFilter: Current status filter.
+ * - leads: All fetched leads.
+ * - filteredLeads: Leads after search/filter.
+ * - currentPage: Current pagination page.
+ * - leadsPerPage: Number of leads per page.
+ */
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import Leadform from '../pages/LeadFormPage';
-import { ArrowRight, Clock, Check, X, Trash2, Search, PlusCircle, Download, Filter } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import {
+  ArrowRight,
+  Clock,
+  Check,
+  X,
+  Trash2,
+  Search,
+  PlusCircle,
+  Download,
+  Filter
+} from 'lucide-react';
 
 const LeadsPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -20,6 +53,7 @@ const LeadsPage = () => {
   const [leadsPerPage] = useState(4);
   const navigate = useNavigate();
   const location = useLocation();
+  const currentUser = useSelector((state) => state.user.currentUser);
 
   useEffect(() => {
     fetchLeads();
@@ -27,7 +61,9 @@ const LeadsPage = () => {
 
   const fetchLeads = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/leads');
+      const response = await axios.get('http://localhost:3000/api/leads', {
+        withCredentials: true // <-- This is required for cookies/JWT!
+      });
       if (response.data.success) {
         const fetchedLeads = response.data.data.map((lead) => {
           const phases = lead.phases.map((phase) => ({
@@ -38,9 +74,9 @@ const LeadsPage = () => {
           const currentStage = phases.findIndex((phase) => phase.status !== 'Completed');
           const isFullyCompleted = currentStage === -1;
           return {
-            id: lead._id,
+            _id: lead._id, // Always use _id for MongoDB
             name: lead.name,
-            company: lead.company.name,
+            company: lead.company?.name || '', // Defensive: company may be null
             phases,
             currentStage: isFullyCompleted ? phases.length - 1 : currentStage,
             isFullyCompleted,
@@ -109,6 +145,7 @@ const LeadsPage = () => {
   };
 
   const handleDelete = async (id) => {
+    if (currentUser?.role === 'client') return; // Prevent client from deleting
     if (window.confirm('Are you sure you want to delete this lead?')) {
       try {
         await axios.delete(`http://localhost:3000/api/leads/${id}`, { withCredentials: true });
@@ -125,12 +162,13 @@ const LeadsPage = () => {
     navigate(`/leads/${id}`);
   };
 
+  // Updated: renderStatusDots with tooltip
   const renderStatusDots = (phases) => {
     return (
       <div className="flex items-start justify-between w-full">
         {phases.map((phase, i) => {
           let circleClasses =
-            'relative w-8 h-8 rounded-full border-2 flex items-center justify-center ' +
+            'relative group w-8 h-8 rounded-full border-2 flex items-center justify-center ' +
             'transition-transform duration-300 hover:scale-105 ';
           let lineClasses = 'flex-auto h-0.5 transition-colors duration-300 mt-4 ';
           let statusIcon = null;
@@ -142,8 +180,8 @@ const LeadsPage = () => {
               statusIcon = <Check className="w-4 h-4" />;
               break;
             case 'In Progress':
-              circleClasses += 'border-[#E8CC03] bg-[#E8CC03] text-white';
-              lineClasses += 'bg-[#E8CC03]';
+              circleClasses += 'border-yellow-500 bg-yellow-500 text-white';
+              lineClasses += 'bg-yellow-500';
               statusIcon = <Clock className="w-4 h-4" />;
               break;
             case 'Stopped':
@@ -160,8 +198,14 @@ const LeadsPage = () => {
           return (
             <React.Fragment key={phase.name}>
               <div className="flex flex-col items-center">
-                <div className={circleClasses}>
+                <div className={circleClasses} title={phase.status}>
                   {statusIcon}
+                  {/* Tooltip */}
+                  <span className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 
+                                   hidden group-hover:block whitespace-no-wrap
+                                   bg-gray-800 text-white text-xs rounded py-1 px-2 pointer-events-none z-10">
+                    {phase.status === 'Not Started' ? 'Not Started' : phase.status}
+                  </span>
                 </div>
                 <span className="mt-1 text-xs text-gray-600">{phase.name}</span>
               </div>
@@ -177,27 +221,20 @@ const LeadsPage = () => {
     );
   };
 
+  // Pagination logic unchanged...
   const indexOfLastLead = currentPage * leadsPerPage;
   const indexOfFirstLead = indexOfLastLead - leadsPerPage;
   const currentLeads = filteredLeads.slice(indexOfFirstLead, indexOfLastLead);
   const totalPages = Math.ceil(filteredLeads.length / leadsPerPage);
 
   const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
-
   const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
-
   const goToPage = (pageNumber) => {
-    if (pageNumber >= 1 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-    }
+    if (pageNumber >= 1 && pageNumber <= totalPages) setCurrentPage(pageNumber);
   };
 
   const renderPagination = () => {
@@ -207,14 +244,10 @@ const LeadsPage = () => {
     const maxPagesToShow = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
     let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-
     if (endPage - startPage + 1 < maxPagesToShow) {
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(i);
-    }
+    for (let i = startPage; i <= endPage; i++) pageNumbers.push(i);
 
     return (
       <div className="flex justify-center items-center mt-6 mb-4">
@@ -257,6 +290,19 @@ const LeadsPage = () => {
     );
   };
 
+  const isClient = currentUser?.role === 'client';
+
+  const clientWelcome = (
+    <div className="mb-8 flex flex-col items-center">
+      <h2 className="text-2xl font-bold mb-2">
+        Welcome, {currentUser?.firstName || currentUser?.username || currentUser?.email}
+      </h2>
+      <p className="text-gray-600 text-center max-w-xl">
+        Here you can view all the leads you are associated with. If you have any questions, please contact your company representative.
+      </p>
+    </div>
+  );
+
   return (
     <div className="flex h-screen">
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
@@ -264,6 +310,8 @@ const LeadsPage = () => {
         <Navbar toggleSidebar={toggleSidebar} />
         <main className="flex-1 p-2 bg-gray-70 overflow-x-hidden overflow-y-auto">
           <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-md p-4">
+            {/* Show welcome for client */}
+            {isClient && clientWelcome}
             <div className="flex justify-between items-center pb-4 mb-4 border-b">
               <div className="relative flex-1 mr-4">
                 <input
@@ -276,22 +324,29 @@ const LeadsPage = () => {
                 <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
               </div>
               <div className="flex space-x-2">
-                <Link to="/leadform">
+                {/* Only show Add Lead if not client */}
+                {currentUser?.role !== 'client' && (
+                  <Link to="/leadform">
+                    <button
+                      className="bg-[#51A1E0] text-white px-4 py-2 rounded-lg flex items-center hover:bg-[#4086ba] transition-colors hover:shadow-md"
+                    >
+                      <PlusCircle className="mr-2" size={20} /> Add Lead
+                    </button>
+                  </Link>
+                )}
+                {currentUser?.role !== 'client' && (
                   <button
-                    className="bg-[#51A1E0] text-white px-4 py-2 rounded-lg flex items-center hover:bg-[#4086ba] transition-colors hover:shadow-md"
+                    className="border rounded-lg p-2 hover:bg-gray-100 transition-colors hover:shadow"
+                    onClick={handleDownload}
+                    title="Download Leads Report"
                   >
-                    <PlusCircle className="mr-2" size={20} /> Add Lead
+                    <Download size={20} />
                   </button>
-                </Link>
+                )}
                 <button
-                  className="border rounded-lg p-2 hover:bg-gray-100 transition-colors hover:shadow"
-                  onClick={handleDownload}
-                  title="Download Leads Report"
-                >
-                  <Download size={20} />
-                </button>
-                <button
-                  className={`border rounded-lg p-2 hover:bg-gray-100 transition-colors hover:shadow ${filterOpen ? 'bg-gray-100' : ''}`}
+                  className={`border rounded-lg p-2 hover:bg-gray-100 transition-colors hover:shadow ${
+                    filterOpen ? 'bg-gray-100' : ''
+                  }`}
                   onClick={toggleFilter}
                   title="Filter Leads"
                 >
@@ -299,6 +354,8 @@ const LeadsPage = () => {
                 </button>
               </div>
             </div>
+
+            {/* Filter Panel */}
             {filterOpen && (
               <div className="mb-4 p-4 border rounded-lg bg-gray-50 relative">
                 <button
@@ -326,6 +383,8 @@ const LeadsPage = () => {
                 </div>
               </div>
             )}
+
+            {/* Leads Table */}
             <table className="w-full table-auto border-separate border-spacing-y-3">
               <thead>
                 <tr className="bg-gray-50 border-b">
@@ -337,40 +396,44 @@ const LeadsPage = () => {
               </thead>
               <tbody>
                 {currentLeads.map((lead) => (
-                  <tr
-                    key={lead.id}
-                    className="shadow-md rounded-lg bg-white transition-colors duration-200 hover:shadow-lg hover:bg-gray-100"
-                  >
+                  <tr key={lead._id} className="shadow-md rounded-lg bg-white transition-colors duration-200 hover:shadow-lg hover:bg-gray-100">
                     <td className="p-3">{lead.name}</td>
-                    <td className="p-3">{lead.company}</td>
+                    <td className="p-3">{lead.company || '—'}</td>
                     <td className="p-3">{renderStatusDots(lead.phases)}</td>
                     <td className="p-3 text-right flex justify-end space-x-2">
                       <button
-                        onClick={() => handleViewDetail(lead.id)}
+                        onClick={() => handleViewDetail(lead._id)}
                         className="inline-flex items-center px-3 py-2 bg-[#51A1E0] text-white rounded-lg hover:bg-[#4086ba] hover:shadow-lg transition-transform transform hover:scale-105"
                       >
                         View Details
                       </button>
-                      <button
-                        onClick={() => handleDelete(lead.id)}
-                        className="inline-flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 hover:shadow-lg transition-transform transform hover:scale-105"
-                      >
-                        <Trash2 className="w-4 h-4 mr-1" /> Delete
-                      </button>
+                      {currentUser?.role !== 'client' && (
+                        <button
+                          onClick={() => handleDelete(lead._id)}
+                          className="inline-flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 hover:shadow-lg transition-transform transform hover:scale-105"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" /> Delete
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
                 {currentLeads.length === 0 && (
                   <tr>
                     <td colSpan="4" className="text-center py-8 text-gray-500">
-                      No leads found matching your criteria
+                      {isClient
+                        ? "You are not associated with any leads yet. Please contact your company representative if you think this is a mistake."
+                        : "No leads found matching your criteria"}
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
+
+            {/* Pagination */}
             {renderPagination()}
           </div>
+
           <div className="mt-auto">
             <Footer />
           </div>

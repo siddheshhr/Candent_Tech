@@ -4,6 +4,19 @@ import { toast } from 'react-toastify';
 import { ChevronDown, ChevronUp, Send } from 'lucide-react';
 import CommentItem from './CommentItem';
 
+/**
+ * DiscussionSection Component
+ * Displays a collapsible discussion panel for a lead, including comments and replies.
+ * 
+ * Props:
+ * - leadId: The ID of the lead for which to display the discussion/comments.
+ * 
+ * Features:
+ * - Fetches and displays comments for the given lead.
+ * - Allows users to add, like, reply to, and delete comments/replies.
+ * - Supports sorting comments by newest/oldest.
+ * - Shows loading and error states.
+ */
 function DiscussionSection({ leadId }) {
   const [isOpen, setIsOpen] = useState(true);
   const [comments, setComments] = useState([]);
@@ -42,6 +55,7 @@ function DiscussionSection({ leadId }) {
     }
   };
 
+  //   * Handle new comment submission.
   const handleSubmitComment = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;

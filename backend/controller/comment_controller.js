@@ -7,7 +7,11 @@ const isValidObjectId = (id) => {
   return mongoose.Types.ObjectId.isValid(id);
 };
 
-// Get all comments for a lead
+/**
+ * Get all comments for a specific lead.
+ * Supports pagination and sorting (newest/oldest).
+ * Route: GET /api/comments/leads/:leadId/comments
+ */
 exports.getCommentsByLeadId = async (req, res) => {
   try {
     const { leadId } = req.params;
@@ -49,7 +53,10 @@ exports.getCommentsByLeadId = async (req, res) => {
   }
 };
 
-// Create a new comment
+/**
+ * Create a new comment for a lead.
+ * Route: POST /api/comments/leads/:leadId/comments
+ */
 exports.createComment = async (req, res) => {
   try {
     const { leadId } = req.params;
@@ -100,7 +107,11 @@ exports.createComment = async (req, res) => {
   }
 };
 
-// Update a comment
+/**
+ * Update an existing comment.
+ * Only the comment owner can update.
+ * Route: PUT /api/comments/comments/:commentId
+ */
 exports.updateComment = async (req, res) => {
   try {
     const { commentId } = req.params;
@@ -161,7 +172,11 @@ exports.updateComment = async (req, res) => {
   }
 };
 
-// Delete a comment
+/**
+ * Delete a comment.
+ * Only the comment owner or an admin can delete.
+ * Route: DELETE /api/comments/comments/:commentId
+ */
 exports.deleteComment = async (req, res) => {
   try {
     const { commentId } = req.params;
@@ -214,7 +229,10 @@ exports.deleteComment = async (req, res) => {
   }
 };
 
-// Add a reply to a comment
+/**
+ * Add a reply to a comment.
+ * Route: POST /api/comments/comments/:commentId/replies
+ */
 exports.addReply = async (req, res) => {
   try {
     const { commentId } = req.params;

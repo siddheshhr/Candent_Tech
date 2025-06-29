@@ -7,6 +7,17 @@ import { useDispatch } from "react-redux";
 import { signInSucess } from "../redux/user/userSlice"; // Fixed typo in import
 import { useNavigate } from "react-router-dom";
 
+/**
+ * OAuth Component
+ * Handles Google OAuth sign-in using Firebase and communicates with the backend for authentication.
+ *
+ * Features:
+ * - Initiates Google sign-in popup using Firebase Auth.
+ * - Sends user info to backend /auth/google endpoint for registration/login.
+ * - On success, dispatches Redux action to update user state and navigates to home.
+ * - Handles and logs errors for both frontend and backend failures.
+ */
+
 function OAuth() {
     const navigate = useNavigate();
     const auth = getAuth(app);
@@ -32,7 +43,7 @@ function OAuth() {
             
             if (response.ok) {
                 dispatch(signInSucess(data)); // Fixed typo in action name
-                navigate('/dashboard');
+                navigate('/');
             } else {
                 console.error('Backend error:', data.message);
             }

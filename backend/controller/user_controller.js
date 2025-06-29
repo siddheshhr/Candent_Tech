@@ -1,8 +1,17 @@
+/**
+ * User Controller
+ * Handles user profile retrieval and update operations.
+ */
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const { errorHandler } = require("../utils/error");
 
-// Get Current User
+/**
+ * Get Current User
+ * Retrieves the currently authenticated user's profile (excluding password).
+ * Route: GET /api/users/me
+ * Requires authentication middleware to set req.user.
+ */
 const getCurrentUser = async (req, res, next) => {
   try {
     console.log("Fetching user:", req.user.id);
@@ -19,7 +28,14 @@ const getCurrentUser = async (req, res, next) => {
   }
 };
 
-// Update User Profile
+/**
+ * Update User Profile
+ * Allows a user to update their own profile information.
+ * Only the authenticated user can update their own account.
+ * Password is hashed if provided.
+ * Route: PUT /api/users/:userId
+ * Requires authentication middleware to set req.user.
+ */
 const updateUser = async (req, res, next) => {
   try {
     console.log("Updating user:", req.params.userId, req.body);

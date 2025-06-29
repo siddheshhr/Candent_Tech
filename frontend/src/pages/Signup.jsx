@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 
 function Signup() {
   const navigate = useNavigate();
+    // State for form fields, error message, and loading spinner
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -20,13 +21,15 @@ function Signup() {
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Handles input changes for all form fields
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.id]: e.target.value.trim()
     });
   };
-
+  
+  // Handles form submission for sign-up
   const handleSubmit = async (e) => {
     e.preventDefault();
     // Check if any field is empty
@@ -51,6 +54,7 @@ function Signup() {
     try {
       setLoading(true);
       setErrorMessage(null);
+      // Send sign-up request to backend
       const res = await fetch('http://localhost:3000/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -86,6 +90,7 @@ function Signup() {
       <div className="signup-form">
         <h1 className="signup-title">Create Your Account</h1>
         <form className="signup-radio-form" onSubmit={handleSubmit}>
+           {/* Name fields */}
           <div className="signup-name-fields">
             <div className="signup-input-group">
               <label>First Name</label>
@@ -119,7 +124,7 @@ function Signup() {
               onChange={handleChange}
             />
           </div>
-
+          {/* Phone number input */}
           <div className="signup-input-group">
             <label>Phone Number</label>
             <input
@@ -130,7 +135,7 @@ function Signup() {
               onChange={handleChange}
             />
           </div>
-
+          {/* Password and confirm password fields */}
           <div className="signup-password-fields">
             <div className="signup-input-group">
               <label>Password</label>
@@ -158,6 +163,7 @@ function Signup() {
             </div>
           </div>
 
+        {/* Sign Up button with loading spinner */}
           <button className="signup-btn font-bold" type="submit" disabled={loading}>
             {loading ? (
               <>
