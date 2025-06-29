@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -12,7 +11,6 @@ import ContactsTable from '../components/ContactsTable';
 import CustomizePhases from '../components/CustomizePhases';
 import CommentSection from '../components/CommentSection';
 
-// LeadDetailPage component to display detailed information about a lead
 function LeadDetailPage() {
   const [lead, setLead] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,15 +18,13 @@ function LeadDetailPage() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Fetch lead details when the component mounts or the lead ID changes
   useEffect(() => {
     async function fetchLeadDetails() {
       try {
         setLoading(true);
-        const res = await axios.get(
-          `http://localhost:3000/api/leads/${id}`,
-          { withCredentials: true }
-        );
+        const res = await axios.get(`http://localhost:3000/api/leads/${id}`, {
+          withCredentials: true,
+        });
         if (res.data.success) {
           setLead(res.data.data);
         } else {
@@ -45,14 +41,12 @@ function LeadDetailPage() {
     if (id) fetchLeadDetails();
   }, [id]);
 
-  // Navigate back to the leads list
   const handleGoBack = () => navigate('/leads');
 
-  // Display loading state
   if (loading) {
     return (
       <div className="flex h-screen">
-        <Sidebar />
+        <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
         <div className="flex-1 flex items-center justify-center">
           <p className="text-xl text-gray-600">Loading...</p>
         </div>
@@ -60,11 +54,10 @@ function LeadDetailPage() {
     );
   }
 
-  // Display message if lead is not found
   if (!lead) {
     return (
       <div className="flex h-screen bg-white-100">
-        <Sidebar />
+        <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
         <div className="flex-1 flex flex-col items-center justify-center">
           <p className="text-xl text-gray-600">Lead not found</p>
           <button
@@ -79,23 +72,12 @@ function LeadDetailPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white-100">
-      {/* Navbar */}
-      <div className="relative z-10">
+    <div className="flex h-screen">
+      <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+      <div className="flex-1 flex flex-col">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-      </div>
-      <div className="flex flex-1">
-        {/* Sidebar */}
-        <div className="relative z-0">
-          <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-        </div>
-        <div
-          className={`flex-1 flex flex-col transition-all duration-300 ${
-            sidebarOpen ? 'ml-64' : 'ml-16'
-          }`}
-        >
-          <div className="min-w-[1000px] mx-auto p-4 flex-1">
-            {/* Lead card and description */}
+        <main className="flex-1 p-2 bg-gray-70 mt-[30px] overflow-x-hidden overflow-y-auto">
+          <div className="max-w-7xl mx-auto mb-[50px] bg-white rounded-lg shadow-md p-4">
             <div className="flex space-x-4 mb-4">
               <LeadCard
                 name={lead.name || 'Soham Shriram'}
@@ -104,7 +86,7 @@ function LeadDetailPage() {
                 dateAdded={
                   new Date(lead.leadAddedDate || '2025-01-27T17:00:00').toLocaleString()
                 }
-                imageUrl="https://placehold.co/64x64" // Updated to fix placeholder image error
+                imageUrl="https://placehold.co/64x64"
               />
               <LeadDescription
                 description={
@@ -114,15 +96,17 @@ function LeadDetailPage() {
               />
             </div>
 
-            {/* Other components */}
             <ContactsTable leadId={id} contacts={lead.contacts || []} setLead={setLead} />
             <CustomizePhases leadId={id} phases={lead.phases || []} setLead={setLead} />
+
             <div className="bg-white rounded-lg shadow-md mb-4 p-6">
               <CommentSection leadId={id} />
             </div>
           </div>
-          <Footer />
-        </div>
+          <div className="mt-auto">
+            <Footer />
+          </div>
+        </main>
       </div>
     </div>
   );

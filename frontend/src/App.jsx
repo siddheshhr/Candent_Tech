@@ -1,13 +1,11 @@
 import React from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import HomePage from './pages/HomePage';
 import Signin from './pages/Signin';
 import SignupPage from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import LeadsPage from './pages/LeadsPage';
 import LeadDetailPage from './pages/LeadDetailsPage.jsx';
-import PersonalLeadPage from './pages/PersonalLeadPage';
 import ProfilePage from './pages/ProfilePage';
 import LeadForm from './pages/LeadFormPage';
 import OpportunitiesPage from './pages/OpportunitiesPage';
@@ -45,7 +43,6 @@ function App() {
           />
           <Route path="/leads" element={<LeadsPage />} />
           <Route path="/leads/:id" element={<LeadDetailPage />} />
-          <Route path="/personalinfo" element={<PersonalLeadPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/leadform" element={<LeadForm />} />
           <Route
