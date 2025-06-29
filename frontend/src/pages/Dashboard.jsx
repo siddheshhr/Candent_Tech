@@ -14,15 +14,17 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import jsPDF from 'jspdf';
-import { useSelector } from 'react-redux';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import StatsCard from '../components/StatsCard';
 import OpportunityChart from '../components/OpportunityChart';
 import ProgressItem from '../components/ProgressItem';
-import { PieChart, Briefcase, Percent, Users, Download, RefreshCw, Bell, Calendar, Layers } from 'lucide-react';
+import { PieChart, Briefcase, Percent, Users, Download, RefreshCw, Layers } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import useLeadStats from './../components/useLeadsState.js';
+import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -38,47 +40,37 @@ const itemVariants = {
 };
 
 export default function Dashboard() {
+  const {
+    opportunityCount,
+    leadsCount,
+    opportunityPercentage,
+    leadsPercentage,
+    isLoading: isLeadStatsLoading,
+  } = useLeadStats();
+
   const navigate = useNavigate();
   const currentUser = useSelector((state) => state.user.currentUser);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [userName, setUserName] = useState('');
-  const [dateRange, setDateRange] = useState('month'); // 'week', 'month', 'quarter', 'year'
-  
+  const [dateRange, setDateRange] = useState('month');
+
   const [stats, setStats] = useState({
     totalLeads: 0,
     totalCompanies: 0,
     totalOpportunities: 0,
     leadsPerMonth: [],
     recentLeads: [],
-    recentOpportunities: [], // <-- add this
+    recentOpportunities: [],
     leadsByStage: [],
     upcomingTasks: []
   });
-
-
-  // Get current user info
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const res = await axios.get('http://localhost:3000/api/user/current', { withCredentials: true });
-        if (res.data.success) {
-          setUserName(res.data.user.firstName || res.data.user.name || 'User');
-        }
-      } catch (error) {
-        console.error('Error fetching user info:', error);
-      }
-    };
-    
-    fetchUserInfo();
-  }, []);
 
   // Fetch dashboard data
   const fetchDashboardData = async (range = dateRange) => {
     setIsLoading(true);
     try {
-      const res = await axios.get(`http://localhost:3000/api/leads/stats?range=${range}`, 
+      const res = await axios.get(`http://localhost:3000/api/leads/stats?range=${range}`,
         { withCredentials: true }
       );
       if (res.data.success) {
@@ -88,7 +80,7 @@ export default function Dashboard() {
           totalOpportunities: res.data.totalOpportunities || 0,
           leadsPerMonth: res.data.leadsPerMonth,
           recentLeads: res.data.recentLeads,
-          recentOpportunities: res.data.recentOpportunities || [], // <-- add this
+          recentOpportunities: res.data.recentOpportunities || [],
           leadsByStage: res.data.leadsByStage || [],
           upcomingTasks: res.data.upcomingTasks || []
         });
@@ -100,7 +92,6 @@ export default function Dashboard() {
     }
   };
 
-  // Initial data loading
   useEffect(() => {
     fetchDashboardData();
   }, []);
@@ -111,18 +102,15 @@ export default function Dashboard() {
     setRefreshing(false);
   };
 
-  const handleDateRangeChange = (range) => {
-    setDateRange(range);
-    fetchDashboardData(range);
-  };
-
-  // Conversion rate = opportunities ÷ leads
-  const conversionRate = stats.totalLeads > 0
-    ? Math.round((stats.totalOpportunities / stats.totalLeads) * 100)
-    : 0;
+  // Conversion Factor: current opportunities / (total leads - current opportunities)
+  const denominator = stats.totalLeads - stats.totalOpportunities;
+  const conversionFactor =
+    denominator > 0
+      ? ((stats.totalOpportunities / denominator) * 100).toFixed(2)
+      : '0.00';
 
   // Calculate growth metrics (compare with previous period)
-  const leadGrowth = stats.previousPeriodLeads 
+  const leadGrowth = stats.previousPeriodLeads
     ? Math.round(((stats.totalLeads - stats.previousPeriodLeads) / stats.previousPeriodLeads) * 100)
     : 0;
 
@@ -130,26 +118,20 @@ export default function Dashboard() {
   const handleExport = () => {
     const doc = new jsPDF();
     let y = 20;
-    
-    // Title and date
+
     doc.setFontSize(18);
     doc.text('Dashboard Report', 14, y); y += 8;
     doc.setFontSize(10);
     doc.text(`Generated: ${new Date().toLocaleString()}`, 14, y); y += 10;
-    
-    // Main metrics
+
     doc.setFontSize(14);
     doc.text('Key Metrics Summary', 14, y); y += 8;
     doc.setFontSize(12);
     doc.text(`Total Leads: ${stats.totalLeads}`, 14, y); y += 7;
     doc.text(`Total Companies: ${stats.totalCompanies}`, 14, y); y += 7;
     doc.text(`Total Opportunities: ${stats.totalOpportunities}`, 14, y); y += 7;
-    doc.text(`Conversion Rate: ${conversionRate}%`, 14, y); y += 12;
-    
-    // Leads per period
-    doc.setFontSize(14);
-    
-    // Lead stages
+    doc.text(`Conversion Factor: ${conversionFactor}%`, 14, y); y += 12;
+
     if (stats.leadsByStage && stats.leadsByStage.length > 0) {
       doc.setFontSize(14);
       doc.text('Lead Stages Distribution', 14, y); y += 8;
@@ -160,8 +142,7 @@ export default function Dashboard() {
       });
       y += 8;
     }
-    
-    // Recent leads
+
     doc.setFontSize(14);
     doc.text('Recent Leads', 14, y); y += 8;
     doc.setFontSize(12);
@@ -170,14 +151,13 @@ export default function Dashboard() {
       doc.text(` • ${l.name} (${l.company?.name || '—'}) on ${date}`, 18, y);
       y += 7;
     });
-    
+
     doc.save(`dashboard_report_${new Date().toISOString().slice(0,10)}.pdf`);
   };
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   if (currentUser?.role === 'client') {
-    // Minimal dashboard for clients
     return (
       <div className="flex flex-col items-center justify-center h-screen">
         <h2 className="text-2xl font-bold mb-4">Welcome, {currentUser.firstName || currentUser.email}</h2>
@@ -185,13 +165,6 @@ export default function Dashboard() {
       </div>
     );
   }
-
-  // Conversion Factor: current opportunities / (total leads - current opportunities)
-  const denominator = stats.totalLeads - stats.totalOpportunities;
-  const conversionFactor =
-    denominator > 0
-      ? ((stats.totalOpportunities / denominator) ).toFixed(2)
-      : '0.00';
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -214,19 +187,14 @@ export default function Dashboard() {
                 Welcome, {currentUser?.firstName || currentUser?.name || currentUser?.email || 'User'}
               </h1>
               <p className="text-gray-500 text-lg">
-                {new Date().toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  month: 'long', 
-                  day: 'numeric' 
+                {new Date().toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  month: 'long',
+                  day: 'numeric'
                 })}
               </p>
             </div>
-            
             <div className="flex flex-wrap gap-3">
-              {/* Date range selector */}
-            
-
-              {/* Refresh button */}
               <motion.button
                 onClick={handleRefresh}
                 disabled={refreshing}
@@ -234,14 +202,12 @@ export default function Dashboard() {
                 whileTap={{ scale: 0.95 }}
                 className="bg-white text-gray-700 px-4 py-2 rounded-xl shadow-sm flex items-center gap-2 border"
               >
-                <RefreshCw 
-                  size={18} 
-                  className={`${refreshing ? 'animate-spin' : ''}`} 
-                /> 
+                <RefreshCw
+                  size={18}
+                  className={`${refreshing ? 'animate-spin' : ''}`}
+                />
                 Refresh
               </motion.button>
-
-              {/* Export button */}
               <motion.button
                 onClick={handleExport}
                 whileHover={{ scale: 1.05 }}
@@ -254,15 +220,13 @@ export default function Dashboard() {
           </motion.div>
 
           {/* Loading state */}
-          {isLoading && (
+          {isLoading || isLeadStatsLoading ? (
             <div className="w-full h-64 flex items-center justify-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3B9EC1]"></div>
             </div>
-          )}
-
-          {!isLoading && (
+          ) : (
             <>
-              {/* Two large metric cards with animated counters */}
+              {/* Two large metric cards */}
               <motion.div
                 className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
                 variants={containerVariants}
@@ -288,7 +252,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="mt-4 flex justify-end">
-                    <button 
+                    <button
                       onClick={() => navigate('/leads')}
                       className="text-blue-600 text-sm hover:underline"
                     >
@@ -296,7 +260,6 @@ export default function Dashboard() {
                     </button>
                   </div>
                 </motion.div>
-
                 <motion.div
                   className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100"
                   variants={itemVariants}
@@ -312,9 +275,7 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  <div className="mt-4 flex justify-end">
-                    
-                  </div>
+                  <div className="mt-4 flex justify-end"></div>
                 </motion.div>
               </motion.div>
 
@@ -325,8 +286,8 @@ export default function Dashboard() {
               >
                 <StatsCard
                   icon={<PieChart size={24}/>}
-                  value={stats.totalLeads}
-                  label="Total Leads"
+                  value={leadsCount}
+                  label="Leads"
                   bgColor="bg-pink-100"
                   iconCircle="bg-pink-200"
                   iconColor="text-pink-600"
@@ -340,16 +301,16 @@ export default function Dashboard() {
                   iconColor="text-amber-600"
                 />
                 <StatsCard
-                    icon={<Percent size={24}/>}
-                    value={`${conversionFactor}`}
-                    label="Conversion Factor"
-                    bgColor="bg-green-100"
-                    iconCircle="bg-green-200"
-                    iconColor="text-green-600"
+                  icon={<Percent size={24}/>}
+                  value={`${conversionFactor}%`}
+                  label="Conversion Factor"
+                  bgColor="bg-green-100"
+                  iconCircle="bg-green-200"
+                  iconColor="text-green-600"
                 />
                 <StatsCard
                   icon={<Layers size={24}/>}
-                  value={stats.totalOpportunities}
+                  value={opportunityCount}
                   label="Opportunities"
                   bgColor="bg-blue-100"
                   iconCircle="bg-blue-200"
@@ -362,27 +323,24 @@ export default function Dashboard() {
                 className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8"
                 variants={containerVariants}
               >
-                {/* Lead trend chart */}
-                <motion.div 
+                <motion.div
                   variants={itemVariants}
                   className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100"
                 >
                   <h2 className="text-2xl font-bold text-gray-800 mb-4">Lead Activity</h2>
                   <div className="h-80">
-                    <OpportunityChart 
-                      data={stats.leadsPerMonth} 
+                    <OpportunityChart
+                      data={stats.leadsPerMonth}
                       timeRange={dateRange}
                     />
                   </div>
                 </motion.div>
-
-                {/* Stage distribution chart */}
                 <motion.div variants={itemVariants}>
                   <ProgressItem data={stats.leadsByStage} />
                 </motion.div>
               </motion.div>
 
-              {/* Recent Leads and Recent Opportunities Side by Side */}
+              {/* Recent Leads and Recent Opportunities */}
               <motion.div
                 className="grid grid-cols-1 xl:grid-cols-2 gap-8"
                 variants={containerVariants}
@@ -394,7 +352,7 @@ export default function Dashboard() {
                 >
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold text-gray-800">Recent Leads</h2>
-                    <button 
+                    <button
                       onClick={() => navigate('/leads')}
                       className="text-blue-600 text-sm hover:underline"
                     >
@@ -411,7 +369,7 @@ export default function Dashboard() {
                       <div
                         key={idx}
                         className="grid grid-cols-12 py-3 items-center border-b last:border-0 hover:bg-gray-50 transition-colors rounded-lg cursor-pointer"
-                        onClick={() => navigate(`/leads/${lead.id}`)}
+                        onClick={() => navigate(`/leads/${lead._id}`)}
                       >
                         <div className="col-span-5 flex items-center">
                           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mr-3 flex items-center justify-center text-white font-medium">
@@ -431,7 +389,6 @@ export default function Dashboard() {
                     <p className="text-center text-gray-500 py-4">No recent leads.</p>
                   )}
                 </motion.div>
-
                 {/* Recent Opportunities */}
                 <motion.div
                   className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100"
@@ -439,7 +396,7 @@ export default function Dashboard() {
                 >
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold text-gray-800">Recent Opportunities</h2>
-                    <button 
+                    <button
                       onClick={() => navigate('/opportunities')}
                       className="text-blue-600 text-sm hover:underline"
                     >
@@ -480,7 +437,6 @@ export default function Dashboard() {
             </>
           )}
         </motion.div>
-
         <Footer />
       </div>
     </div>

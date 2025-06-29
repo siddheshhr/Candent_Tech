@@ -1,7 +1,7 @@
 // src/components/ProgressItem.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; // <-- FIXED: add useState, useEffect
 import { motion } from 'framer-motion';
-import axios from 'axios';
+import useLeadStats from './useLeadsState.js';
 
 export default function ProgressItem() {
   const [opportunityCount, setOpportunityCount] = useState(0);
@@ -57,11 +57,7 @@ export default function ProgressItem() {
   const strokeWidth = 30;
   const radius = (size - strokeWidth) / 2;
   const center = size / 2;
-  
-  // Calculate the circumference of the circle
   const circumference = 2 * Math.PI * radius;
-  
-  // Calculate the arc length for each segment
   const opportunityArc = (opportunityPercentage / 100) * circumference;
   const leadsArc = (leadsPercentage / 100) * circumference;
 
@@ -76,7 +72,6 @@ export default function ProgressItem() {
       <h2 className="text-2xl font-bold text-gray-900 mb-6">
         Leads and Opportunities
       </h2>
-      
       <div className="flex flex-col items-center">
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
@@ -85,9 +80,7 @@ export default function ProgressItem() {
         ) : (
           <>
             <div className="relative" style={{ width: size, height: size }}>
-              {/* Using SVG with simple circles */}
               <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-                {/* Leads segment - Dark blue */}
                 <motion.circle
                   cx={center}
                   cy={center}
@@ -101,8 +94,6 @@ export default function ProgressItem() {
                   animate={{ strokeDashoffset: -opportunityArc }}
                   transition={{ duration: 1, delay: 0.2 }}
                 />
-                
-                {/* Opportunity segment - Light blue */}
                 <motion.circle
                   cx={center}
                   cy={center}
@@ -117,9 +108,7 @@ export default function ProgressItem() {
                   transition={{ duration: 1 }}
                 />
               </svg>
-              
-              {/* Center percentage */}
-              <motion.div 
+              <motion.div
                 className="absolute inset-0 flex flex-col items-center justify-center"
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -129,33 +118,42 @@ export default function ProgressItem() {
                 <span className="text-sm text-gray-600">Opportunities</span>
               </motion.div>
             </div>
-            
-            {/* Custom legend with counts */}
+
             <div className="flex items-center justify-center space-x-8 mt-6">
-              <motion.div 
+              <motion.div
                 className="flex flex-col items-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.2 }}
               >
                 <div className="flex items-center">
-                  <div className="w-4 h-4 rounded-full mr-2" style={{ backgroundColor: "#0077B6" }}></div>
+                  <div
+                    className="w-4 h-4 rounded-full mr-2"
+                    style={{ backgroundColor: '#0077B6' }}
+                  />
                   <span className="text-lg font-medium">Leads</span>
                 </div>
-                <span className="text-sm text-gray-600 mt-1">{leadsCount} leads</span>
+                <span className="text-sm text-gray-600 mt-1">
+                  {leadsCount} leads
+                </span>
               </motion.div>
-              
-              <motion.div 
+
+              <motion.div
                 className="flex flex-col items-center"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.4 }}
               >
                 <div className="flex items-center">
-                  <div className="w-4 h-4 rounded-full mr-2" style={{ backgroundColor: "#00B4D8" }}></div>
+                  <div
+                    className="w-4 h-4 rounded-full mr-2"
+                    style={{ backgroundColor: '#00B4D8' }}
+                  />
                   <span className="text-lg font-medium">Opportunities</span>
                 </div>
-                <span className="text-sm text-gray-600 mt-1">{opportunityCount} opportunities</span>
+                <span className="text-sm text-gray-600 mt-1">
+                  {opportunityCount} opportunities
+                </span>
               </motion.div>
             </div>
           </>

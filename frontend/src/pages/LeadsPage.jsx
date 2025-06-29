@@ -24,15 +24,23 @@
  * - leadsPerPage: Number of leads per page.
  */
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import Leadform from '../pages/LeadFormPage';
-import { ArrowRight, Clock, Check, X, Trash2, Search, PlusCircle, Download, Filter } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import {
+  ArrowRight,
+  Clock,
+  Check,
+  X,
+  Trash2,
+  Search,
+  PlusCircle,
+  Download,
+  Filter
+} from 'lucide-react';
 
 const LeadsPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -154,12 +162,13 @@ const LeadsPage = () => {
     navigate(`/leads/${id}`);
   };
 
+  // Updated: renderStatusDots with tooltip
   const renderStatusDots = (phases) => {
     return (
       <div className="flex items-start justify-between w-full">
         {phases.map((phase, i) => {
           let circleClasses =
-            'relative w-8 h-8 rounded-full border-2 flex items-center justify-center ' +
+            'relative group w-8 h-8 rounded-full border-2 flex items-center justify-center ' +
             'transition-transform duration-300 hover:scale-105 ';
           let lineClasses = 'flex-auto h-0.5 transition-colors duration-300 mt-4 ';
           let statusIcon = null;
@@ -171,8 +180,8 @@ const LeadsPage = () => {
               statusIcon = <Check className="w-4 h-4" />;
               break;
             case 'In Progress':
-              circleClasses += 'border-[#E8CC03] bg-[#E8CC03] text-white';
-              lineClasses += 'bg-[#E8CC03]';
+              circleClasses += 'border-yellow-500 bg-yellow-500 text-white';
+              lineClasses += 'bg-yellow-500';
               statusIcon = <Clock className="w-4 h-4" />;
               break;
             case 'Stopped':
@@ -191,6 +200,12 @@ const LeadsPage = () => {
               <div className="flex flex-col items-center">
                 <div className={circleClasses} title={phase.status}>
                   {statusIcon}
+                  {/* Tooltip */}
+                  <span className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 
+                                   hidden group-hover:block whitespace-no-wrap
+                                   bg-gray-800 text-white text-xs rounded py-1 px-2 pointer-events-none z-10">
+                    {phase.status === 'Not Started' ? 'Not Started' : phase.status}
+                  </span>
                 </div>
                 <span className="mt-1 text-xs text-gray-600">{phase.name}</span>
               </div>
@@ -206,27 +221,20 @@ const LeadsPage = () => {
     );
   };
 
+  // Pagination logic unchanged...
   const indexOfLastLead = currentPage * leadsPerPage;
   const indexOfFirstLead = indexOfLastLead - leadsPerPage;
   const currentLeads = filteredLeads.slice(indexOfFirstLead, indexOfLastLead);
   const totalPages = Math.ceil(filteredLeads.length / leadsPerPage);
 
   const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
-
   const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
-
   const goToPage = (pageNumber) => {
-    if (pageNumber >= 1 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-    }
+    if (pageNumber >= 1 && pageNumber <= totalPages) setCurrentPage(pageNumber);
   };
 
   const renderPagination = () => {
@@ -236,14 +244,10 @@ const LeadsPage = () => {
     const maxPagesToShow = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
     let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-
     if (endPage - startPage + 1 < maxPagesToShow) {
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(i);
-    }
+    for (let i = startPage; i <= endPage; i++) pageNumbers.push(i);
 
     return (
       <div className="flex justify-center items-center mt-6 mb-4">
@@ -340,7 +344,9 @@ const LeadsPage = () => {
                   </button>
                 )}
                 <button
-                  className={`border rounded-lg p-2 hover:bg-gray-100 transition-colors hover:shadow ${filterOpen ? 'bg-gray-100' : ''}`}
+                  className={`border rounded-lg p-2 hover:bg-gray-100 transition-colors hover:shadow ${
+                    filterOpen ? 'bg-gray-100' : ''
+                  }`}
                   onClick={toggleFilter}
                   title="Filter Leads"
                 >
@@ -348,6 +354,8 @@ const LeadsPage = () => {
                 </button>
               </div>
             </div>
+
+            {/* Filter Panel */}
             {filterOpen && (
               <div className="mb-4 p-4 border rounded-lg bg-gray-50 relative">
                 <button
@@ -375,6 +383,8 @@ const LeadsPage = () => {
                 </div>
               </div>
             )}
+
+            {/* Leads Table */}
             <table className="w-full table-auto border-separate border-spacing-y-3">
               <thead>
                 <tr className="bg-gray-50 border-b">
@@ -419,8 +429,11 @@ const LeadsPage = () => {
                 )}
               </tbody>
             </table>
+
+            {/* Pagination */}
             {renderPagination()}
           </div>
+
           <div className="mt-auto">
             <Footer />
           </div>
